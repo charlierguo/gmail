@@ -4,7 +4,7 @@ A Pythonic interface to Google's GMail, with all the tools you'll need. Search,
 read and send multipart emails, archive, mark as read/unread, delete emails, 
 and manage labels.
 
-Heavily inspired by Kriss "nu7hatch" Kowalik's GMail for Ruby library 
+Heavily inspired by Kriss "nu7hatch" Kowalik's GMail for Ruby library (https://github.com/charlierguo/gmail)
 
 ## Author(s)
 
@@ -18,7 +18,6 @@ You can install it easy using pip:
     
 Or install it manually:
 
-    git clone git://github.com/nu7hatch/gmail.git
+    git clone git://github.com/charlierguo/gmail.git
     cd gmail
     python setup.py
-  
