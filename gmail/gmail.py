@@ -24,6 +24,7 @@ class Gmail():
 
         # self.connect()
 
+
     def connect(self, raise_errors=True):
         # print 'connecting...'
         # try:
@@ -37,27 +38,10 @@ class Gmail():
 
         return self.imap
 
+
     def connection(self):
         return self.imap
 
-    def switch_to_mailbox(self, mailbox):
-        if mailbox:
-            # TODO: utf-7 encode mailbox name
-            self.connection().select(mailbox)
-        self.current_mailbox = mailbox
-
-    def mailbox(self, name):
-        # TODO: test mailbox
-        name = str(name)
-        mailbox = self.mailboxes.get(name) or Mailbox(self, name)
-        self.mailboxes[name] = mailbox
-        if not self.current_mailbox == name:
-            self.switch_to_mailbox(name)
-
-        return mailbox
-
-    def mailboxes(self):
-        return self.mailboxes
 
     def fetch_mailboxes(self):
         response, mailbox_list = self.connection().list()
@@ -65,6 +49,45 @@ class Gmail():
             for mailbox in mailbox_list:
                 mailbox_name = mailbox.split(' ')[-1].replace('"', '')
                 self.mailboxes[mailbox_name] = Mailbox(self, mailbox_name)
+
+    def switch_to_mailbox(self, mailbox):
+        if mailbox:
+            # TODO: utf-7 encode mailbox name
+            self.connection().select(mailbox)
+        self.current_mailbox = mailbox
+
+    def mailbox(self, mailbox_name):
+        mailbox = self.mailboxes.get(mailbox_name)
+        if mailbox and not self.current_mailbox == mailbox_name:
+            self.switch_to_mailbox(mailbox_name)
+
+        return mailbox
+
+    def create_mailbox(self, mailbox_name):
+        mailbox = self.mailboxes.get(mailbox_name)
+        if not mailbox:
+            self.connection().create(mailbox_name)
+            mailbox = Mailbox(self, mailbox_name)
+            self.mailboxes[mailbox_name] = mailbox
+
+        return mailbox
+
+    def delete_mailbox(self, mailbox_name):
+        mailbox = self.mailboxes.get(mailbox_name)
+        if mailbox:
+            self.connection().delete(mailbox_name)
+            del self.mailboxes[mailbox_name]
+
+    def rename_mailbox(self, old_mailbox, new_mailbox):
+        mailbox = self.mailboxes.get(old_mailbox)
+        if mailbox:
+            self.connection().rename(old_mailbox, new_mailbox)
+            mailbox = self.mailboxes[old_mailbox]
+            self.mailboxes[new_mailbox] = mailbox
+            del self.mailboxes[old_mailbox]
+
+        return mailbox
+
 
     def login(self, username, password):
         self.username = username
@@ -90,6 +113,8 @@ class Gmail():
     def logout(self):
         self.connection().logout()
         self.logged_in = False
+
+
 
     def labels(self):
         return

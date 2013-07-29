@@ -26,31 +26,39 @@ class Mailbox():
         self.gmail = gmail
         self.messages = {}
 
-    def emails(self, category='all', prefetch=False, **kwargs):
-        search = list(self.MAILBOX_ALIASES[category])
 
-        if kwargs.get('after'):
-            search.extend(['SINCE', kwargs.get('after').strftime("%d-%B-%Y")])
-        if kwargs.get('before'):
-            search.extend(['BEFORE', kwargs.get('before').strftime("%d-%B-%Y")])
-        if kwargs.get('on'):
-            search.extend(['ON', kwargs.get('on').strftime("%d-%B-%Y")])
-        if kwargs.get('sender'):
-            search.extend(['FROM', kwargs.get('sender')])
-        if kwargs.get('to'):
-            search.extend(['TO', kwargs.get('to')])
-        if kwargs.get('subject'):
-            search.extend(['SUBJECT', kwargs.get('subject')])
-        if kwargs.get('label'):
-            search.extend(['LABEL', kwargs.get('label')])
-        if kwargs.get('attachment'):
-            search.extend(['HAS', 'attachment'])
-        if kwargs.get('search'):
-            search.extend(['BODY', kwargs.get('search')])
-        if kwargs.get('body'):
-            search.extend(['BODY', kwargs.get('body')])
-        if kwargs.get('query'):
-            search.extend([kwargs.get('query')])
+    def emails(self, prefetch=False, **kwargs):
+        search = ['ALL']
+
+        kwargs.get('read')   and search.append('SEEN')
+        kwargs.get('unread') and search.append('UNSEEN')
+
+        kwargs.get('starred')   and search.append('FLAGGED')
+        kwargs.get('unstarred') and search.append('UNFLAGGED')
+
+        kwargs.get('deleted')   and search.append('DELETED')
+        kwargs.get('undeleted') and search.append('UNDELETED')
+
+        kwargs.get('draft')   and search.append('DRAFT')
+        kwargs.get('undraft') and search.append('UNDRAFT')
+
+        kwargs.get('before') and search.extend(['BEFORE', kwargs.get('before').strftime("%d-%B-%Y")])
+        kwargs.get('after')  and search.extend(['AFTER', kwargs.get('after').strftime("%d-%B-%Y")])
+        kwargs.get('on')     and search.extend(['ON', kwargs.get('on').strftime("%d-%B-%Y")])
+
+        kwargs.get('sender') and search.extend(['FROM', kwargs.get('sender')])
+        kwargs.get('fr') and search.extend(['FROM', kwargs.get('fr')])
+        kwargs.get('to') and search.extend(['TO', kwargs.get('to')])
+        kwargs.get('cc') and search.extend(['CC', kwargs.get('cc')])
+
+        kwargs.get('subject') and search.extend(['SUBJECT', kwargs.get('subject')])
+        kwargs.get('body') and search.extend(['BODY', kwargs.get('body')])
+
+        kwargs.get('label') and search.extend(['LABEL', kwargs.get('label')])
+        kwargs.get('attachment') and search.extend(['HAS', 'attachment'])
+
+        kwargs.get('query') and search.extend([kwargs.get('query')])
+
 
         # mailbox = self.gmail.mailbox(self.name)
         # @gmail.conn.uid_search(search).collect do |uid| 
@@ -64,11 +72,8 @@ class Mailbox():
                     self.messages[uid] = Message(self, uid)
                 emails.append(self.messages[uid])
 
-            if prefetch:
-                msgs = self.gmail.connection().uid('FETCH', ','.join(uids), '(RFC822 BODY.PEEK[TEXT] X-GM-THRID X-GM-MSGID X-GM-LABELS)')
-                print msgs
-
-
+                if prefetch:
+                    self.messages[uid].fetch()
 
         return emails
 
