@@ -27,29 +27,33 @@ class Message():
         self.message_id = None
 
 
-    def parse(self, raw_message, raw_flags, raw_body):
+    def parse(self, raw_message):
         raw_headers = raw_message[0]
         raw_email = raw_message[1]
 
         self.message = email.message_from_string(raw_email)
 
-        self.subject = self.message['subject']
         self.to = self.message['to']
         self.fr = self.message['fr']
         self.delivered_to = self.message['delivered_to']
-        self.body = body
+
+        self.subject = self.message['subject']
+        for content in self.message.walk():       
+            if content.get_content_type() == "text/plain":
+                self.body = content.get_payload(decode=True)
+
         self.sent_at = datetime.datetime.fromtimestamp(time.mktime(email.utils.parsedate_tz(self.message['date'])[:9]))
 
-        if re.search(r'X-GM-THRID (\d+)', gm_headers):
-            self.thread_id = re.search(r'X-GM-THRID (\d+)', gm_headers).groups(1)
-        if re.search(r'X-GM-MSGID (\d+)', gm_headers):
-            self.message_id = re.search(r'X-GM-MSGID (\d+)', gm_headers).groups(1)
+        if re.search(r'X-GM-THRID (\d+)', raw_headers):
+            self.thread_id = re.search(r'X-GM-THRID (\d+)', raw_headers).groups(1)
+        if re.search(r'X-GM-MSGID (\d+)', raw_headers):
+            self.message_id = re.search(r'X-GM-MSGID (\d+)', raw_headers).groups(1)
 
     def fetch(self):
         if not self.message:
-            response, results = self.gmail.connection().uid('FETCH', self.uid, '(RFC822.PEEK X-GM-THRID X-GM-MSGID X-GM-LABELS)')
+            response, results = self.gmail.connection().uid('FETCH', self.uid, '(BODY.PEEK[] X-GM-THRID X-GM-MSGID X-GM-LABELS)')
             
-            self.parse(results[0], results[1][0], results[1][1])
+            self.parse(results[0])
 
         return self.message
 

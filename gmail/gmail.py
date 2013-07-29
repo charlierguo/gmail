@@ -78,16 +78,6 @@ class Gmail():
             self.connection().delete(mailbox_name)
             del self.mailboxes[mailbox_name]
 
-    def rename_mailbox(self, old_mailbox, new_mailbox):
-        mailbox = self.mailboxes.get(old_mailbox)
-        if mailbox:
-            self.connection().rename(old_mailbox, new_mailbox)
-            mailbox = self.mailboxes[old_mailbox]
-            self.mailboxes[new_mailbox] = mailbox
-            del self.mailboxes[old_mailbox]
-
-        return mailbox
-
 
     def login(self, username, password):
         self.username = username
