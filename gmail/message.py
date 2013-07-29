@@ -11,64 +11,45 @@ class Message():
         self.mailbox = mailbox
         self.gmail = mailbox.gmail if mailbox else None
 
-        self._message = None
+        self.message = None
 
-        self._subject = None
-        self._to = None
-        self._sender = None
-        self._delivered_to = None
-        self._body = None
+        self.subject = None
+        self.body = None
 
-        self._sent_at = None
+        self.to = None
+        self.fr = None
+        self.cc = None
+        self.delivered_to = None
 
-        self._thread_id = None
-        self._message_id = None
+        self.sent_at = None
 
-    def subject(self):
-        return self._subject
+        self.thread_id = None
+        self.message_id = None
 
-    def body(self):
-        return self._body
 
-    def sender(self):
-        return self._sender
+    def parse(self, raw_message, raw_flags, raw_body):
+        raw_headers = raw_message[0]
+        raw_email = raw_message[1]
 
-    def to(self):
-        return self._to
+        self.message = email.message_from_string(raw_email)
 
-    def delivered_to(self):
-        return self._delivered_to
+        self.subject = self.message['subject']
+        self.to = self.message['to']
+        self.fr = self.message['fr']
+        self.delivered_to = self.message['delivered_to']
+        self.body = body
+        self.sent_at = datetime.datetime.fromtimestamp(time.mktime(email.utils.parsedate_tz(self.message['date'])[:9]))
 
-    def sent_at(self):
-        return self._sent_at
-
-    def uid(self):
-        return self.uid 
+        if re.search(r'X-GM-THRID (\d+)', gm_headers):
+            self.thread_id = re.search(r'X-GM-THRID (\d+)', gm_headers).groups(1)
+        if re.search(r'X-GM-MSGID (\d+)', gm_headers):
+            self.message_id = re.search(r'X-GM-MSGID (\d+)', gm_headers).groups(1)
 
     def fetch(self):
-        if not self._message:
-            print 'fetching message %s...' % self.uid
-            response, full_message = self.gmail.connection().uid('FETCH', self.uid, '(RFC822 BODY.PEEK[TEXT] X-GM-THRID X-GM-MSGID X-GM-LABELS)')
+        if not self.message:
+            response, results = self.gmail.connection().uid('FETCH', self.uid, '(RFC822.PEEK X-GM-THRID X-GM-MSGID X-GM-LABELS)')
             
+            self.parse(results[0], results[1][0], results[1][1])
 
-            raw_email = full_message[0][1]
-            gm_headers = full_message[0][0]
-            flags = full_message[1][0]
-            body = full_message[1][1]
-            self._message = email.message_from_string(raw_email)
-
-            self._subject = self._message['subject']
-            self._to = self._message['to']
-            self._sender = self._message['sender']
-            self._delivered_to = self._message['delivered_to']
-            self._body = body
-            self._sent_at = datetime.datetime.fromtimestamp(time.mktime(email.utils.parsedate_tz(self._message['date'])[:9]))
-
-            if re.search(r'X-GM-THRID (\d+)', gm_headers):
-                self._thread_id = re.search(r'X-GM-THRID (\d+)', gm_headers).groups(1)
-            if re.search(r'X-GM-MSGID (\d+)', gm_headers):
-                self._message_id = re.search(r'X-GM-MSGID (\d+)', gm_headers).groups(1)
-
-
-        return self._message
+        return self.message
 
