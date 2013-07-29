@@ -47,7 +47,7 @@ class Gmail():
         response, mailbox_list = self.connection().list()
         if response == 'OK':
             for mailbox in mailbox_list:
-                mailbox_name = mailbox.split(' ')[-1].replace('"', '')
+                mailbox_name = mailbox.split('"/"')[-1].replace('"', '').strip()
                 self.mailboxes[mailbox_name] = Mailbox(self, mailbox_name)
 
     def switch_to_mailbox(self, mailbox):

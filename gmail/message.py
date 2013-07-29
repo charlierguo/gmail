@@ -38,21 +38,24 @@ class Message():
         self.delivered_to = self.message['delivered_to']
 
         self.subject = self.message['subject']
-        for content in self.message.walk():       
-            if content.get_content_type() == "text/plain":
-                self.body = content.get_payload(decode=True)
+        if self.message.get_content_maintype() == "multipart":
+            for content in self.message.walk():       
+                if content.get_content_type() == "text/plain":
+                    self.body = content.get_payload(decode=True)
+        elif self.message.get_content_maintype() == "text":
+            self.body = self.message.get_payload()
 
         self.sent_at = datetime.datetime.fromtimestamp(time.mktime(email.utils.parsedate_tz(self.message['date'])[:9]))
 
         if re.search(r'X-GM-THRID (\d+)', raw_headers):
-            self.thread_id = re.search(r'X-GM-THRID (\d+)', raw_headers).groups(1)
+            self.thread_id = re.search(r'X-GM-THRID (\d+)', raw_headers).groups(1)[0]
         if re.search(r'X-GM-MSGID (\d+)', raw_headers):
-            self.message_id = re.search(r'X-GM-MSGID (\d+)', raw_headers).groups(1)
+            self.message_id = re.search(r'X-GM-MSGID (\d+)', raw_headers).groups(1)[0]
 
     def fetch(self):
         if not self.message:
             response, results = self.gmail.connection().uid('FETCH', self.uid, '(BODY.PEEK[] X-GM-THRID X-GM-MSGID X-GM-LABELS)')
-            
+
             self.parse(results[0])
 
         return self.message

@@ -1,5 +1,6 @@
 from message import Message
 from utf import encode as encode_utf7
+import re
 
 class Mailbox():
 
@@ -65,15 +66,22 @@ class Mailbox():
 
         emails = []
         response, data = self.gmail.connection().uid('SEARCH', *search)
-        if response == 'OK':     
-            uids = data[0].split(' ')
+        if response == 'OK':    
+            uids = data[0].split(' ') 
+
             for uid in uids:
                 if not self.messages.get(uid):
                     self.messages[uid] = Message(self, uid)
                 emails.append(self.messages[uid])
 
-                if prefetch:
-                    self.messages[uid].fetch()
+            if prefetch:
+                fetch_str = ','.join(uids)
+                response, results = self.gmail.connection().uid('FETCH', fetch_str, '(BODY.PEEK[] X-GM-THRID X-GM-MSGID X-GM-LABELS)')
+                for index in xrange(len(results) - 1):
+                    raw_message = results[index]
+                    if re.search(r'UID (\d+)', raw_message[0]):
+                        uid = re.search(r'UID (\d+)', raw_message[0]).groups(1)[0]
+                        self.messages[uid].parse(raw_message)
 
         return emails
 
