@@ -1,6 +1,6 @@
 import imaplib
-import utf7
 from mailbox import Mailbox
+from exceptions import AuthenticationError
 
 class Gmail():
     # GMail IMAP defaults
@@ -12,9 +12,11 @@ class Gmail():
     GMAIL_SMTP_HOST = "smtp.gmail.com"
     GMAIL_SMTP_PORT = 587
 
-    def __init__(self, username, options={}):
+    def __init__(self, options={}):
         defaults = {}
-        self.username = username if username.find('@') > 0 else ('%s@gmail.com' % username)
+        self.username = None
+        self.password = None
+
         self.options = defaults.update(options)
 
         self.imap = None
@@ -66,8 +68,8 @@ class Gmail():
                 mailbox_name = mailbox.split(' ')[-1].replace('"', '')
                 self.mailboxes[mailbox_name] = Mailbox(self, mailbox_name)
 
-    def login(self, password, raise_errors=True):
-        print 'logging in...'
+    def login(self, username, password):
+        self.username = username
         self.password = password
 
         if not self.connection():
@@ -80,7 +82,7 @@ class Gmail():
                 self.fetch_mailboxes()
         except imaplib.IMAP4.error:
             if raise_errors:
-                raise Exception('Authentication failed')
+                raise AuthenticationError
 
         return self.logged_in
 

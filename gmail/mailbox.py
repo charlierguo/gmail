@@ -1,5 +1,5 @@
 from message import Message
-from utils import encode as encode_utf7
+from utf import encode as encode_utf7
 
 class Mailbox():
 
