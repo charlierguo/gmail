@@ -1,6 +1,6 @@
 import imaplib
 from mailbox import Mailbox
-from exceptions import AuthenticationError
+from exceptions import *
 
 class Gmail():
     # GMail IMAP defaults
@@ -12,12 +12,10 @@ class Gmail():
     GMAIL_SMTP_HOST = "smtp.gmail.com"
     GMAIL_SMTP_PORT = 587
 
-    def __init__(self, options={}):
+    def __init__(self):
         defaults = {}
         self.username = None
         self.password = None
-
-        self.options = defaults.update(options)
 
         self.imap = None
         self.logged_in = False
@@ -81,8 +79,7 @@ class Gmail():
             if self.logged_in:
                 self.fetch_mailboxes()
         except imaplib.IMAP4.error:
-            if raise_errors:
-                raise AuthenticationError
+            raise AuthenticationError
 
         return self.logged_in
 
@@ -92,17 +89,9 @@ class Gmail():
 
     def logout(self):
         self.connection().logout()
+        self.logged_in = False
 
     def labels(self):
-        return
-
-
-    def compose(self, mail):
-        # TODO: implement compose
-        return
-
-    def deliver(self, mail, raise_errors):
-        # TODO: implement deliver
         return
 
     def inbox(self):
