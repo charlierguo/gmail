@@ -67,60 +67,46 @@ Get messages in your inbox:
 
 Get messages with some criteria:
 
-    g.inbox().emails(after=datetime.Date(2013, 6, 18), before=datetime.Date(2013, 8, 3))
-    g.inbox().emails(on=datetime.Date(2009, 1, 1)
-    g.inbox().emails(fr="myfriend@gmail.com") # "from" is reserved, use "fr" or "sender"
-    g.inbox().emails(to="directlytome@gmail.com")
+    g.inbox().mail(after=datetime.Date(2013, 6, 18), before=datetime.Date(2013, 8, 3))
+    g.inbox().mail(on=datetime.Date(2009, 1, 1)
+    g.inbox().mail(fr="myfriend@gmail.com") # "from" is reserved, use "fr" or "sender"
+    g.inbox().mail(to="directlytome@gmail.com")
 
 Combine flags and options:
 
-    g.inbox.count(unread=True, from="myboss@gmail.com")
+    g.inbox().mail(unread=True, from="myboss@gmail.com")
     
 Browsing labeled emails is similar to work with inbox.
 
-    g.mailbox('Urgent').emails()
+    g.mailbox('Urgent').mail()
     
-Getting messages works the same way as counting: Remember that every message in a 
-conversation/thread will come as a separate message.
+Remember that every message in a conversation/thread will come as a separate message.
 
-    g.inbox.emails(:unread, :before => Date.parse("2010-04-20"), :from => "myboss@gmail.com")
+    g.inbox().mail(unread=True, before=datetime.Date(2013, 8, 3) from="myboss@gmail.com")
     
-### Working with emails! (NOT IMPLEMENTED)
+### Working with emails!
 
 Any news older than 4-20, mark as read and archive it:
 
-    gmail.inbox.find(:before => Date.parse("2010-04-20"), :from => "news@nbcnews.com").each do |email|
-      email.read! # can also unread!, spam! or star!
-      email.archive!
-    end
+    emails = g.inbox().mail(before=datetime.Date(2013, 4, 20), from="news@nbcnews.com")
+    for email in emails:
+        email.read() # can also unread(), delete(), spam(), or star()
+        email.archive()
+
 
 Delete emails from X:
 
-    gmail.inbox.find(:from => "x-fiance@gmail.com").each do |email|
+    gmail.inbox.find(:from => "ex@gmail.com").each do |email|
       email.delete!
-    end
-
-Save all attachments in the "Faxes" label to a local folder:
-
-    folder = "/where/ever"
-    gmail.mailbox("Faxes").emails.each do |email|
-      if !email.message.attachments.empty?
-        email.message.save_attachments_to(folder)
-      end
     end
      
 You can use also `#label` method instead of `#mailbox`: 
 
-    gmail.label("Faxes").emails {|email| ... }
-
-Save just the first attachment from the newest unread email (assuming pdf):
-
-    email = gmail.inbox.find(:unread).first
-    email.attachments[0].save_to_file("/path/to/location")
+    g.label("Faxes").mail()
 
 Add a label to a message:
 
-    email.label("Faxes")
+    email.add_label("Faxes")
     
 Example above will raise error when you don't have the `Faxes` label. You can 
 avoid this using:
