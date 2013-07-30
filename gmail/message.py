@@ -31,6 +31,67 @@ class Message():
         self.thread_id = None
         self.message_id = None
 
+
+    def is_read(self):
+        return ('\\Seen' in self.flags)
+
+    def read(self):
+        flag = '\\Seen'
+        self.gmail.connection().uid('STORE', self.uid, '+FLAGS', flag)
+        if flag not in self.flags: self.flags.append(flag)
+
+    def unread(self):
+        flag = '\\Seen'
+        self.gmail.connection().uid('STORE', self.uid, '-FLAGS', flag)
+        if flag in self.flags: self.flags.remove(flag)
+
+    def is_starred(self):
+        return ('\\Flagged' in self.flags)
+
+    def star(self):
+        flag = '\\Flagged'
+        self.gmail.connection().uid('STORE', self.uid, '+FLAGS', flag)
+        if flag not in self.flags: self.flags.append(flag)
+
+    def unstar(self):
+        flag = '\\Flagged'
+        self.gmail.connection().uid('STORE', self.uid, '-FLAGS', flag)
+        if flag in self.flags: self.flags.remove(flag)
+
+    def is_deleted(self):
+        return ('\\Deleted' in self.flags)
+
+    def delete(self):
+        flag = '\\Deleted'
+        self.gmail.connection().uid('STORE', self.uid, '+FLAGS', flag)
+        if flag not in self.flags: self.flags.append(flag)
+
+    def undelete(self):
+        flag = '\\Deleted'
+        self.gmail.connection().uid('STORE', self.uid, '-FLAGS', flag)
+        if flag in self.flags: self.flags.remove(flag)
+
+    def is_draft(self):
+        return ('\\Draft' in self.flags)
+
+    def has_label(self, label):
+        full_label = '\\%s' % label
+        return (full_label in self.labels)
+
+    def add_label(self, label):
+        full_label = '\\%s' % label
+        self.gmail.connection().uid('STORE', self.uid, '+X-GM-LABELS', full_label)
+        if full_label not in self.labels: self.labels.append(full_label)
+
+    def remove_label(self, label):
+        full_label = '\\%s' % label
+        self.gmail.connection().uid('STORE', self.uid, '-X-GM-LABELS', full_label)
+        if full_label in self.labels: self.labels.remove(full_label)
+
+
+
+
+
     def parse_flags(self, headers):
         return list(ParseFlags(headers))
         # flags = re.search(r'FLAGS \(([^\)]*)\)', headers).groups(1)[0].split(' ')
