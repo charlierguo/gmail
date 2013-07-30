@@ -16,6 +16,7 @@ class Gmail():
         defaults = {}
         self.username = None
         self.password = None
+        self.access_token = None
 
         self.imap = None
         self.logged_in = False
@@ -43,6 +44,7 @@ class Gmail():
         return self.imap
 
 
+
     def fetch_mailboxes(self):
         response, mailbox_list = self.connection().list()
         if response == 'OK':
@@ -50,7 +52,7 @@ class Gmail():
                 mailbox_name = mailbox.split('"/"')[-1].replace('"', '').strip()
                 self.mailboxes[mailbox_name] = Mailbox(self, mailbox_name)
 
-    def switch_to_mailbox(self, mailbox):
+    def use_mailbox(self, mailbox):
         if mailbox:
             # TODO: utf-7 encode mailbox name
             self.connection().select(mailbox)
@@ -59,7 +61,7 @@ class Gmail():
     def mailbox(self, mailbox_name):
         mailbox = self.mailboxes.get(mailbox_name)
         if mailbox and not self.current_mailbox == mailbox_name:
-            self.switch_to_mailbox(mailbox_name)
+            self.use_mailbox(mailbox_name)
 
         return mailbox
 
@@ -79,6 +81,7 @@ class Gmail():
             del self.mailboxes[mailbox_name]
 
 
+
     def login(self, username, password):
         self.username = username
         self.password = password
@@ -96,9 +99,23 @@ class Gmail():
 
         return self.logged_in
 
-    def authenticate(self, username, auth_token):
-        # TODO: implement authenticate
-        return
+    def authenticate(self, username, access_token):
+        self.username = username
+        self.access_token = access_token
+
+        if not self.connection():
+            self.connect()
+
+        try:
+            auth_string = 'user=%s\1auth=Bearer %s\1\1' % (username, access_token)
+            imap_auth = self.connection().authenticate('XOAUTH2', lambda x: auth_string)
+            self.logged_in = (imap_auth and imap_auth[0] == 'OK')
+            if self.logged_in:
+                self.fetch_mailboxes()
+        except imaplib.IMAP4.error:
+            raise AuthenticationError
+
+        return self.logged_in
 
     def logout(self):
         self.connection().logout()
