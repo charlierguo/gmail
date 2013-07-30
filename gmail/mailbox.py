@@ -4,22 +4,6 @@ import re
 
 class Mailbox():
 
-    MAILBOX_ALIASES = {
-      'all'         : ['ALL'],
-      'seen'        : ['SEEN'],
-      'unseen'      : ['UNSEEN'],
-      'read'        : ['SEEN'],
-      'unread'      : ['UNSEEN'],
-      'flagged'     : ['FLAGGED'],
-      'unflagged'   : ['UNFLAGGED'],
-      'starred'     : ['FLAGGED'],
-      'unstarred'   : ['UNFLAGGED'], 
-      'deleted'     : ['DELETED'],
-      'undeleted'   : ['UNDELETED'],
-      'draft'       : ['DRAFT'],
-      'undrafted'   : ['UNDRAFT']
-    }
-
     def __init__(self, gmail, name="INBOX"):
         self.name = name
         # TODO: utf-7 encode mailbox name
@@ -28,7 +12,7 @@ class Mailbox():
         self.messages = {}
 
 
-    def emails(self, prefetch=False, **kwargs):
+    def mail(self, prefetch=False, **kwargs):
         search = ['ALL']
 
         kwargs.get('read')   and search.append('SEEN')
@@ -76,7 +60,7 @@ class Mailbox():
 
             if prefetch:
                 fetch_str = ','.join(uids)
-                response, results = self.gmail.connection().uid('FETCH', fetch_str, '(BODY.PEEK[] X-GM-THRID X-GM-MSGID X-GM-LABELS)')
+                response, results = self.gmail.connection().uid('FETCH', fetch_str, '(BODY.PEEK[] FLAGS X-GM-THRID X-GM-MSGID X-GM-LABELS)')
                 for index in xrange(len(results) - 1):
                     raw_message = results[index]
                     if re.search(r'UID (\d+)', raw_message[0]):

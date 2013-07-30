@@ -2,6 +2,8 @@ import datetime
 import email
 import re
 import time
+from imaplib import ParseFlags
+from utf import encode, decode
 
 class Message():
 
@@ -23,13 +25,28 @@ class Message():
 
         self.sent_at = None
 
+        self.flags = []
+        self.labels = []
+
         self.thread_id = None
         self.message_id = None
 
+    def parse_flags(self, headers):
+        return list(ParseFlags(headers))
+        # flags = re.search(r'FLAGS \(([^\)]*)\)', headers).groups(1)[0].split(' ')
+
+    def parse_labels(self, headers):
+        if re.search(r'X-GM-LABELS \(([^\)]+)\)', headers):
+            labels = re.search(r'X-GM-LABELS \(([^\)]+)\)', headers).groups(1)[0].split(' ')
+            return map(lambda l: l.replace('"', '').decode("string_escape"), labels)
+        else:
+            return list()
 
     def parse(self, raw_message):
         raw_headers = raw_message[0]
         raw_email = raw_message[1]
+
+        # print raw_headers
 
         self.message = email.message_from_string(raw_email)
 
@@ -47,6 +64,11 @@ class Message():
 
         self.sent_at = datetime.datetime.fromtimestamp(time.mktime(email.utils.parsedate_tz(self.message['date'])[:9]))
 
+        self.flags = self.parse_flags(raw_headers)
+        # print self.flags
+        self.labels = self.parse_labels(raw_headers)
+        # print self.labels
+
         if re.search(r'X-GM-THRID (\d+)', raw_headers):
             self.thread_id = re.search(r'X-GM-THRID (\d+)', raw_headers).groups(1)[0]
         if re.search(r'X-GM-MSGID (\d+)', raw_headers):
@@ -54,7 +76,7 @@ class Message():
 
     def fetch(self):
         if not self.message:
-            response, results = self.gmail.connection().uid('FETCH', self.uid, '(BODY.PEEK[] X-GM-THRID X-GM-MSGID X-GM-LABELS)')
+            response, results = self.gmail.connection().uid('FETCH', self.uid, '(BODY.PEEK[] FLAGS X-GM-THRID X-GM-MSGID X-GM-LABELS)')
 
             self.parse(results[0])
 
