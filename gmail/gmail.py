@@ -123,6 +123,14 @@ class Gmail():
 
 
 
+    def find(self, mailbox_name="[Gmail]/All Mail", **kwargs):
+        box = self.mailbox(mailbox_name)
+        return box.mail(**kwargs)
+
+    
+
+
+
     def labels(self):
         return
 

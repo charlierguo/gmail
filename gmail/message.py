@@ -29,6 +29,7 @@ class Message():
         self.labels = []
 
         self.thread_id = None
+        self.thread = []
         self.message_id = None
 
 
