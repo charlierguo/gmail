@@ -13,7 +13,6 @@ class Gmail():
     GMAIL_SMTP_PORT = 587
 
     def __init__(self):
-        defaults = {}
         self.username = None
         self.password = None
         self.access_token = None

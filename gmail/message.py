@@ -3,7 +3,6 @@ import email
 import re
 import time
 from imaplib import ParseFlags
-from utf import encode, decode
 
 class Message():
 
