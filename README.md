@@ -14,11 +14,9 @@ Heavily inspired by Kriss "nu7hatch" Kowalik's GMail for Ruby library (https://g
 
 ## Installation
 
-You install it manually (pip support not yet implemented):
+You install it manually (`pip` support not yet implemented):
 
     git clone git://github.com/charlierguo/gmail.git
-    cd gmail
-    python setup.py
 
 ## Features
 
@@ -89,7 +87,7 @@ Every message in a conversation/thread will come as a separate message.
     
 ### Working with emails
 
-__Important: calls to `mail()` will return a list of empty email messages (with unique IDs). To work with labels, headers, subjects, and bodies, call `fetch()` on an individual message. You can call mail with `prefetch` set to `True`, which will fetch the bodies automatically.__
+__Important: calls to `mail()` will return a list of empty email messages (with unique IDs). To work with labels, headers, subjects, and bodies, call `fetch()` on an individual message. You can call mail with `prefetch=True`, which will fetch the bodies automatically.__
 
     unread = g.inbox().mail(unread=True)
     print unread[0].body
@@ -137,7 +135,7 @@ There is also few shortcuts to mark messages quickly:
 
 ## Copyright
 
-* Copyrignt (c) 2013 Charlie Guo
+* Copyright (c) 2013 Charlie Guo
 
 See LICENSE for details.
 
