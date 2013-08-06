@@ -8,7 +8,7 @@ __This library is still under development, so please forgive some of the rough e
 
 Heavily inspired by Kriss "nu7hatch" Kowalik's GMail for Ruby library (https://github.com/nu7hatch/gmail)
 
-## Author(s)
+## Author
 
 * Charlie Guo [https://github.com/charlierguo]
 
