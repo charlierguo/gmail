@@ -38,12 +38,12 @@ class Message():
 
     def read(self):
         flag = '\\Seen'
-        self.gmail.connection().uid('STORE', self.uid, '+FLAGS', flag)
+        self.gmail.imap.uid('STORE', self.uid, '+FLAGS', flag)
         if flag not in self.flags: self.flags.append(flag)
 
     def unread(self):
         flag = '\\Seen'
-        self.gmail.connection().uid('STORE', self.uid, '-FLAGS', flag)
+        self.gmail.imap.uid('STORE', self.uid, '-FLAGS', flag)
         if flag in self.flags: self.flags.remove(flag)
 
     def is_starred(self):
@@ -51,12 +51,12 @@ class Message():
 
     def star(self):
         flag = '\\Flagged'
-        self.gmail.connection().uid('STORE', self.uid, '+FLAGS', flag)
+        self.gmail.imap.uid('STORE', self.uid, '+FLAGS', flag)
         if flag not in self.flags: self.flags.append(flag)
 
     def unstar(self):
         flag = '\\Flagged'
-        self.gmail.connection().uid('STORE', self.uid, '-FLAGS', flag)
+        self.gmail.imap.uid('STORE', self.uid, '-FLAGS', flag)
         if flag in self.flags: self.flags.remove(flag)
 
     def is_deleted(self):
@@ -64,12 +64,12 @@ class Message():
 
     def delete(self):
         flag = '\\Deleted'
-        self.gmail.connection().uid('STORE', self.uid, '+FLAGS', flag)
+        self.gmail.imap.uid('STORE', self.uid, '+FLAGS', flag)
         if flag not in self.flags: self.flags.append(flag)
 
     def undelete(self):
         flag = '\\Deleted'
-        self.gmail.connection().uid('STORE', self.uid, '-FLAGS', flag)
+        self.gmail.imap.uid('STORE', self.uid, '-FLAGS', flag)
         if flag in self.flags: self.flags.remove(flag)
 
     def is_draft(self):
@@ -81,12 +81,12 @@ class Message():
 
     def add_label(self, label):
         full_label = '\\%s' % label
-        self.gmail.connection().uid('STORE', self.uid, '+X-GM-LABELS', full_label)
+        self.gmail.imap.uid('STORE', self.uid, '+X-GM-LABELS', full_label)
         if full_label not in self.labels: self.labels.append(full_label)
 
     def remove_label(self, label):
         full_label = '\\%s' % label
-        self.gmail.connection().uid('STORE', self.uid, '-X-GM-LABELS', full_label)
+        self.gmail.imap.uid('STORE', self.uid, '-X-GM-LABELS', full_label)
         if full_label in self.labels: self.labels.remove(full_label)
 
 
@@ -138,7 +138,7 @@ class Message():
 
     def fetch(self):
         if not self.message:
-            response, results = self.gmail.connection().uid('FETCH', self.uid, '(BODY.PEEK[] FLAGS X-GM-THRID X-GM-MSGID X-GM-LABELS)')
+            response, results = self.gmail.imap.uid('FETCH', self.uid, '(BODY.PEEK[] FLAGS X-GM-THRID X-GM-MSGID X-GM-LABELS)')
 
             self.parse(results[0])
 

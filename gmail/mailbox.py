@@ -49,7 +49,7 @@ class Mailbox():
         # @gmail.conn.uid_search(search).collect do |uid| 
 
         emails = []
-        response, data = self.gmail.connection().uid('SEARCH', *search)
+        response, data = self.gmail.imap.uid('SEARCH', *search)
         if response == 'OK':    
             uids = data[0].split(' ') 
 
@@ -60,7 +60,7 @@ class Mailbox():
 
             if prefetch:
                 fetch_str = ','.join(uids)
-                response, results = self.gmail.connection().uid('FETCH', fetch_str, '(BODY.PEEK[] FLAGS X-GM-THRID X-GM-MSGID X-GM-LABELS)')
+                response, results = self.gmail.imap.uid('FETCH', fetch_str, '(BODY.PEEK[] FLAGS X-GM-THRID X-GM-MSGID X-GM-LABELS)')
                 for index in xrange(len(results) - 1):
                     raw_message = results[index]
                     if re.search(r'UID (\d+)', raw_message[0]):
