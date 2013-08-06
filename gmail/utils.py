@@ -3,11 +3,11 @@
 from .gmail import Gmail 
 
 def login(username, password):
-    g = Gmail()
-    g.login(username, password)
-    return g
+    gmail = Gmail()
+    gmail.login(username, password)
+    return gmail
 
 def authenticate(username, access_token):
-    g = Gmail()
-    g.authenticate(username, access_token)
-    return g
+    gmail = Gmail()
+    gmail.authenticate(username, access_token)
+    return gmail
