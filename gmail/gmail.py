@@ -13,7 +13,6 @@ class Gmail():
     GMAIL_SMTP_PORT = 587
 
     def __init__(self):
-        defaults = {}
         self.username = None
         self.password = None
         self.access_token = None
@@ -29,7 +28,6 @@ class Gmail():
 
 
     def connect(self, raise_errors=True):
-        # print 'connecting...'
         # try:
         #     self.imap = imaplib.IMAP4_SSL(self.GMAIL_IMAP_HOST, self.GMAIL_IMAP_PORT)
         # except socket.error:
