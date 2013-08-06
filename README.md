@@ -14,7 +14,7 @@ Heavily inspired by Kriss "nu7hatch" Kowalik's GMail for Ruby library (https://g
 
 ## Installation
 
-You install it manually (`pip` support not yet implemented):
+For now, installation is manual (`pip` support not yet implemented):
 
     git clone git://github.com/charlierguo/gmail.git
 
@@ -27,7 +27,7 @@ You install it manually (`pip` support not yet implemented):
 
 ## Basic usage
 
-First of all import the `gmail` library.
+To start, import the `gmail` library.
 
     import gmail
     
@@ -42,9 +42,9 @@ To easily get up and running:
 Which will automatically log you into a GMail account. 
 This is actually a shortcut for creating a new Gmail object:
     
-    import gmail
+    from gmail import Gmail
 
-    g = gmail.Gmail()
+    g = Gmail()
     g.login(username, password)
     # play with your gmail...
     g.logout()
@@ -52,7 +52,7 @@ This is actually a shortcut for creating a new Gmail object:
 You can also check if you are logged in at any time:
 
     g = gmail.login(username, password)
-    g.logged_in # Should be True
+    g.logged_in # Should be True, AuthenticationError if login fails
 
 ### OAuth authentication 
 
