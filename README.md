@@ -12,11 +12,7 @@ Heavily inspired by Kriss "nu7hatch" Kowalik's GMail for Ruby library (https://g
 
 ## Installation
 
-You can install it easy using pip:
-
-    sudo pip install gmail
-    
-Or install it manually:
+You install it manually (pip support not yet implemented):
 
     git clone git://github.com/charlierguo/gmail.git
     cd gmail
@@ -25,7 +21,7 @@ Or install it manually:
 ## Features
 
 * Search emails
-* Read emails (handles attachments)
+* Read emails 
 * Emails: label, archive, delete, mark as read/unread/spam, star
 * Manage labels
 
@@ -37,7 +33,14 @@ First of all import the `gmail` library.
     
 ### Authenticating gmail sessions
 
-This will you automatically log in to your account. 
+To easily get up and running:
+
+    import gmail 
+
+    g = gmail.login(username, password)
+
+Which will automatically log you into a GMail account. 
+This is actually a shortcut for creating a new Gmail object:
     
     import gmail
 
@@ -46,26 +49,24 @@ This will you automatically log in to your account.
     # play with your gmail...
     g.logout()
 
-There is a shortcut to avoid creating a new Gmail object
-    
-    import gmail 
-
-    g = gmail.login(username, password)
-
 You can also check if you are logged in at any time:
 
     g = gmail.login(username, password)
     g.logged_in # Should be True
 
-### XOAuth authentication (NOT IMPLEMENTED)
+### OAuth authentication 
 
-### Gathering emails
+If you have already received an OAuth2 access token from Google (https://developers.google.com/accounts/docs/OAuth2) for a given user, you can easily log the user in. (Because OAuth 1.0 usage was deprecated in April 2012, this library does not currently support its usage)
+
+    gmail = gmail.authenticate(username, access_token)
+
+### Filtering emails
     
-Get messages in your inbox:
+Get all messages in your inbox:
 
-    g.inbox().emails()
+    g.inbox().mail()
 
-Get messages with some criteria:
+Get messages that fit some criteria:
 
     g.inbox().mail(after=datetime.Date(2013, 6, 18), before=datetime.Date(2013, 8, 3))
     g.inbox().mail(on=datetime.Date(2009, 1, 1)
@@ -86,9 +87,9 @@ Remember that every message in a conversation/thread will come as a separate mes
     
 ### Working with emails!
 
-Any news older than 4-20, mark as read and archive it:
+Any news older than 4-18, mark as read and archive it:
 
-    emails = g.inbox().mail(before=datetime.Date(2013, 4, 20), from="news@nbcnews.com")
+    emails = g.inbox().mail(before=datetime.Date(2013, 4, 18), from="news@nbcnews.com")
     for email in emails:
         email.read() # can also unread(), delete(), spam(), or star()
         email.archive()
@@ -96,22 +97,17 @@ Any news older than 4-20, mark as read and archive it:
 
 Delete emails from X:
 
-    gmail.inbox.find(:from => "ex@gmail.com").each do |email|
-      email.delete!
-    end
+    emails = g.inbox().mail(from="junkmail@gmail.com")
+    for email in emails:
+        email.delete()
      
-You can use also `#label` method instead of `#mailbox`: 
+You can use also `label` method instead of `mailbox`: 
 
     g.label("Faxes").mail()
 
 Add a label to a message:
 
     email.add_label("Faxes")
-    
-Example above will raise error when you don't have the `Faxes` label. You can 
-avoid this using:
-
-    email.label!("Faxes") # The `Faxes` label will be automatically created now
 
 You can also move message to a label/mailbox:
  
@@ -127,16 +123,6 @@ There is also few shortcuts to mark messages quickly:
     email.unstar()
 
 ### Managing labels (NOT IMPLEMENTED)
-
-## Note on Patches/Pull Requests
- 
-* Fork the project.
-* Make your feature addition or bug fix.
-* Add tests for it. This is important so I don't break it in a
-  future version unintentionally.
-* Commit, do not mess with version, or history.
-  (if you want to have your own version, that is fine but bump version in a commit by itself I can ignore when I pull)
-* Send me a pull request. Bonus points for topic branches.
 
 ## Copyright
 
