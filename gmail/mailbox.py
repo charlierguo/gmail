@@ -9,6 +9,7 @@ class Mailbox():
         # TODO: utf-7 encode mailbox name
         self.external_name = encode_utf7(name)
         self.gmail = gmail
+        self.date_format = "%d-%b-%Y"
         self.messages = {}
 
 
@@ -27,9 +28,9 @@ class Mailbox():
         kwargs.get('draft')   and search.append('DRAFT')
         kwargs.get('undraft') and search.append('UNDRAFT')
 
-        kwargs.get('before') and search.extend(['BEFORE', kwargs.get('before').strftime("%d-%b-%Y")])
-        kwargs.get('after')  and search.extend(['SINCE', kwargs.get('after').strftime("%d-%b-%Y")])
-        kwargs.get('on')     and search.extend(['ON', kwargs.get('on').strftime("%d-%b-%Y")])
+        kwargs.get('before') and search.extend(['BEFORE', kwargs.get('before').strftime(self.date_format)])
+        kwargs.get('after')  and search.extend(['SINCE', kwargs.get('after').strftime(self.date_format)])
+        kwargs.get('on')     and search.extend(['ON', kwargs.get('on').strftime(self.date_format)])
 
         kwargs.get('sender') and search.extend(['FROM', kwargs.get('sender')])
         kwargs.get('fr') and search.extend(['FROM', kwargs.get('fr')])
