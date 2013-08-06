@@ -39,11 +39,11 @@ class Gmail():
 
         self.imap = imaplib.IMAP4_SSL(self.GMAIL_IMAP_HOST, self.GMAIL_IMAP_PORT)
 
-        self.smtp = smtplib.SMTP(self.server,self.port)
-        self.smtp.set_debuglevel(self.debug)
-        self.smtp.ehlo()
-        self.smtp.starttls()
-        self.smtp.ehlo()
+        # self.smtp = smtplib.SMTP(self.server,self.port)
+        # self.smtp.set_debuglevel(self.debug)
+        # self.smtp.ehlo()
+        # self.smtp.starttls()
+        # self.smtp.ehlo()
 
         return self.imap
 
@@ -128,17 +128,23 @@ class Gmail():
         self.logged_in = False
 
 
+    def label(self, label_name):
+        return self.mailbox(label_name)
 
     def find(self, mailbox_name="[Gmail]/All Mail", **kwargs):
         box = self.mailbox(mailbox_name)
         return box.mail(**kwargs)
 
     
+    def copy(self, uid, to_mailbox, from_mailbox=None):
+        if from_mailbox:
+            self.use_mailbox(from_mailbox)
+        self.imap.uid('COPY', uid, to_mailbox)
 
 
 
     def labels(self):
-        return
+        return self.mailboxes.keys()
 
     def inbox(self):
         return self.mailbox("INBOX")

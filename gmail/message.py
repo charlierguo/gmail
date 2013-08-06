@@ -59,6 +59,24 @@ class Message():
         self.gmail.imap.uid('STORE', self.uid, '-FLAGS', flag)
         if flag in self.flags: self.flags.remove(flag)
 
+    def is_draft(self):
+        return ('\\Draft' in self.flags)
+
+    def has_label(self, label):
+        full_label = '%s' % label
+        return (full_label in self.labels)
+
+    def add_label(self, label):
+        full_label = '%s' % label
+        self.gmail.imap.uid('STORE', self.uid, '+X-GM-LABELS', full_label)
+        if full_label not in self.labels: self.labels.append(full_label)
+
+    def remove_label(self, label):
+        full_label = '%s' % label
+        self.gmail.imap.uid('STORE', self.uid, '-X-GM-LABELS', full_label)
+        if full_label in self.labels: self.labels.remove(full_label)
+
+
     def is_deleted(self):
         return ('\\Deleted' in self.flags)
 
@@ -67,29 +85,25 @@ class Message():
         self.gmail.imap.uid('STORE', self.uid, '+FLAGS', flag)
         if flag not in self.flags: self.flags.append(flag)
 
-    def undelete(self):
-        flag = '\\Deleted'
-        self.gmail.imap.uid('STORE', self.uid, '-FLAGS', flag)
-        if flag in self.flags: self.flags.remove(flag)
+        trash = '[Gmail]/Trash' if '[Gmail]/Trash' in self.gmail.labels() else '[Gmail]/Bin'
+        if self.mailbox.name not in ['[Gmail]/Bin', '[Gmail]/Trash']:
+            self.move_to(trash)
 
-    def is_draft(self):
-        return ('\\Draft' in self.flags)
-
-    def has_label(self, label):
-        full_label = '\\%s' % label
-        return (full_label in self.labels)
-
-    def add_label(self, label):
-        full_label = '\\%s' % label
-        self.gmail.imap.uid('STORE', self.uid, '+X-GM-LABELS', full_label)
-        if full_label not in self.labels: self.labels.append(full_label)
-
-    def remove_label(self, label):
-        full_label = '\\%s' % label
-        self.gmail.imap.uid('STORE', self.uid, '-X-GM-LABELS', full_label)
-        if full_label in self.labels: self.labels.remove(full_label)
+    # def undelete(self):
+    #     flag = '\\Deleted'
+    #     self.gmail.imap.uid('STORE', self.uid, '-FLAGS', flag)
+    #     if flag in self.flags: self.flags.remove(flag)
 
 
+    def move_to(self, name):
+        self.gmail.copy(self.uid, name, self.mailbox.name)
+        if name not in ['[Gmail]/Bin', '[Gmail]/Trash']:
+            self.delete()
+
+
+
+    def archive(self):
+        self.move_to('[Gmail]/All Mail')
 
 
 

@@ -4,6 +4,8 @@ A Pythonic interface to Google's GMail, with all the tools you'll need. Search,
 read and send multipart emails, archive, mark as read/unread, delete emails, 
 and manage labels.
 
+__This library is still under development, so please forgive some of the rough edges__
+
 Heavily inspired by Kriss "nu7hatch" Kowalik's GMail for Ruby library (https://github.com/nu7hatch/gmail)
 
 ## Author(s)
@@ -68,8 +70,8 @@ Get all messages in your inbox:
 
 Get messages that fit some criteria:
 
-    g.inbox().mail(after=datetime.Date(2013, 6, 18), before=datetime.Date(2013, 8, 3))
-    g.inbox().mail(on=datetime.Date(2009, 1, 1)
+    g.inbox().mail(after=datetime.date(2013, 6, 18), before=datetime.date(2013, 8, 3))
+    g.inbox().mail(on=datetime.date(2009, 1, 1)
     g.inbox().mail(fr="myfriend@gmail.com") # "from" is reserved, use "fr" or "sender"
     g.inbox().mail(to="directlytome@gmail.com")
 
@@ -77,25 +79,34 @@ Combine flags and options:
 
     g.inbox().mail(unread=True, from="myboss@gmail.com")
     
-Browsing labeled emails is similar to work with inbox.
+Browsing labeled emails is similar to working with your inbox.
 
     g.mailbox('Urgent').mail()
     
-Remember that every message in a conversation/thread will come as a separate message.
+Every message in a conversation/thread will come as a separate message.
 
-    g.inbox().mail(unread=True, before=datetime.Date(2013, 8, 3) from="myboss@gmail.com")
+    g.inbox().mail(unread=True, before=datetime.date(2013, 8, 3) from="myboss@gmail.com")
     
-### Working with emails!
+### Working with emails
 
-Any news older than 4-18, mark as read and archive it:
+__Important: calls to `mail()` will return a list of empty email messages (with unique IDs). To work with labels, headers, subjects, and bodies, call `fetch()` on an individual message. You can call mail with `prefetch` set to `True`, which will fetch the bodies automatically.__
 
-    emails = g.inbox().mail(before=datetime.Date(2013, 4, 18), from="news@nbcnews.com")
+    unread = g.inbox().mail(unread=True)
+    print unread[0].body
+    # None
+
+    unread[0].fetch()
+    print unread[0].body
+    # Dear ...,
+
+Mark news past a certain date as read and archive it:
+
+    emails = g.inbox().mail(before=datetime.date(2013, 4, 18), from="news@nbcnews.com")
     for email in emails:
         email.read() # can also unread(), delete(), spam(), or star()
         email.archive()
 
-
-Delete emails from X:
+Delete all emails from a certain person:
 
     emails = g.inbox().mail(from="junkmail@gmail.com")
     for email in emails:
@@ -108,11 +119,6 @@ You can use also `label` method instead of `mailbox`:
 Add a label to a message:
 
     email.add_label("Faxes")
-
-You can also move message to a label/mailbox:
- 
-    email.move_to("Faxes")
-    email.move_to!("NewLabel")
     
 There is also few shortcuts to mark messages quickly:
 
@@ -122,7 +128,12 @@ There is also few shortcuts to mark messages quickly:
     email.star()
     email.unstar()
 
-### Managing labels (NOT IMPLEMENTED)
+### Roadmap
+* Write tests
+* Better label support
+* Moving between labels/mailboxes
+* Intuitive thread fetching & manipulation
+* Sending mail via Google's SMTP servers (for now, check out https://github.com/paulchakravarti/gmail-sender)
 
 ## Copyright
 

@@ -27,9 +27,9 @@ class Mailbox():
         kwargs.get('draft')   and search.append('DRAFT')
         kwargs.get('undraft') and search.append('UNDRAFT')
 
-        kwargs.get('before') and search.extend(['BEFORE', kwargs.get('before').strftime("%d-%B-%Y")])
-        kwargs.get('after')  and search.extend(['AFTER', kwargs.get('after').strftime("%d-%B-%Y")])
-        kwargs.get('on')     and search.extend(['ON', kwargs.get('on').strftime("%d-%B-%Y")])
+        kwargs.get('before') and search.extend(['BEFORE', kwargs.get('before').strftime("%d-%b-%Y")])
+        kwargs.get('after')  and search.extend(['SINCE', kwargs.get('after').strftime("%d-%b-%Y")])
+        kwargs.get('on')     and search.extend(['ON', kwargs.get('on').strftime("%d-%b-%Y")])
 
         kwargs.get('sender') and search.extend(['FROM', kwargs.get('sender')])
         kwargs.get('fr') and search.extend(['FROM', kwargs.get('fr')])
@@ -43,10 +43,6 @@ class Mailbox():
         kwargs.get('attachment') and search.extend(['HAS', 'attachment'])
 
         kwargs.get('query') and search.extend([kwargs.get('query')])
-
-
-        # mailbox = self.gmail.mailbox(self.name)
-        # @gmail.conn.uid_search(search).collect do |uid| 
 
         emails = []
         response, data = self.gmail.imap.uid('SEARCH', *search)
