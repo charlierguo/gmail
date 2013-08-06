@@ -11,7 +11,7 @@ def read(fname):
 setup(
     name = "gmail",
     version = "0.0.5",
-    author = "Charlie Gui",
+    author = "Charlie Guo",
     author_email = "FIXME",
     description = ("A Pythonic interface for Google Mail."),
     license = "MIT",
