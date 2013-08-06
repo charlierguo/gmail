@@ -121,8 +121,6 @@ class Message():
         raw_headers = raw_message[0]
         raw_email = raw_message[1]
 
-        # print raw_headers
-
         self.message = email.message_from_string(raw_email)
 
         self.to = self.message['to']
@@ -140,9 +138,8 @@ class Message():
         self.sent_at = datetime.datetime.fromtimestamp(time.mktime(email.utils.parsedate_tz(self.message['date'])[:9]))
 
         self.flags = self.parse_flags(raw_headers)
-        # print self.flags
+
         self.labels = self.parse_labels(raw_headers)
-        # print self.labels
 
         if re.search(r'X-GM-THRID (\d+)', raw_headers):
             self.thread_id = re.search(r'X-GM-THRID (\d+)', raw_headers).groups(1)[0]

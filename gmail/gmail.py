@@ -28,7 +28,6 @@ class Gmail():
 
 
     def connect(self, raise_errors=True):
-        # print 'connecting...'
         # try:
         #     self.imap = imaplib.IMAP4_SSL(self.GMAIL_IMAP_HOST, self.GMAIL_IMAP_PORT)
         # except socket.error:
