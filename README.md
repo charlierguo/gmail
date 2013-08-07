@@ -69,7 +69,7 @@ Get all messages in your inbox:
 Get messages that fit some criteria:
 
     g.inbox().mail(after=datetime.date(2013, 6, 18), before=datetime.date(2013, 8, 3))
-    g.inbox().mail(on=datetime.date(2009, 1, 1)
+    g.inbox().mail(on=datetime.date(2009, 1, 1))
     g.inbox().mail(fr="myfriend@gmail.com") # "from" is reserved, use "fr" or "sender"
     g.inbox().mail(to="directlytome@gmail.com")
 
