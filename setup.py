@@ -18,7 +18,6 @@ setup(
     keywords = "google gmail",
     url = "https://github.com/charlierguo/gmail",
     packages=['gmail'],
-    package_dir={'gmail': ''},
     long_description=read('README.md'),
     classifiers=[
         "Development Status :: 3 - Alpha",
