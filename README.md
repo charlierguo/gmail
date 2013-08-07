@@ -6,11 +6,11 @@ and manage labels.
 
 __This library is still under development, so please forgive some of the rough edges__
 
-Heavily inspired by Kriss "nu7hatch" Kowalik's GMail for Ruby library (https://github.com/nu7hatch/gmail)
+Heavily inspired by [Kriss "nu7hatch" Kowalik's GMail for Ruby library](https://github.com/nu7hatch/gmail)
 
 ## Author
 
-* Charlie Guo [https://github.com/charlierguo]
+* [Charlie Guo](https://github.com/charlierguo)
 
 ## Installation
 
@@ -56,7 +56,7 @@ You can also check if you are logged in at any time:
 
 ### OAuth authentication 
 
-If you have already received an OAuth2 access token from Google (https://developers.google.com/accounts/docs/OAuth2) for a given user, you can easily log the user in. (Because OAuth 1.0 usage was deprecated in April 2012, this library does not currently support its usage)
+If you have already received an [OAuth2 access token from Google](https://developers.google.com/accounts/docs/OAuth2) for a given user, you can easily log the user in. (Because OAuth 1.0 usage was deprecated in April 2012, this library does not currently support its usage)
 
     gmail = gmail.authenticate(username, access_token)
 
