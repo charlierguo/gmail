@@ -70,12 +70,12 @@ Get messages that fit some criteria:
 
     g.inbox().mail(after=datetime.date(2013, 6, 18), before=datetime.date(2013, 8, 3))
     g.inbox().mail(on=datetime.date(2009, 1, 1)
-    g.inbox().mail(fr="myfriend@gmail.com") # "from" is reserved, use "fr" or "sender"
+    g.inbox().mail(sender="myfriend@gmail.com") # "from" is reserved, use "fr" or "sender"
     g.inbox().mail(to="directlytome@gmail.com")
 
 Combine flags and options:
 
-    g.inbox().mail(unread=True, from="myboss@gmail.com")
+    g.inbox().mail(unread=True, sender="myboss@gmail.com")
     
 Browsing labeled emails is similar to working with your inbox.
 
@@ -83,7 +83,7 @@ Browsing labeled emails is similar to working with your inbox.
     
 Every message in a conversation/thread will come as a separate message.
 
-    g.inbox().mail(unread=True, before=datetime.date(2013, 8, 3) from="myboss@gmail.com")
+    g.inbox().mail(unread=True, before=datetime.date(2013, 8, 3) sender="myboss@gmail.com")
     
 ### Working with emails
 
@@ -99,14 +99,14 @@ __Important: calls to `mail()` will return a list of empty email messages (with 
 
 Mark news past a certain date as read and archive it:
 
-    emails = g.inbox().mail(before=datetime.date(2013, 4, 18), from="news@nbcnews.com")
+    emails = g.inbox().mail(before=datetime.date(2013, 4, 18), sender="news@nbcnews.com")
     for email in emails:
         email.read() # can also unread(), delete(), spam(), or star()
         email.archive()
 
 Delete all emails from a certain person:
 
-    emails = g.inbox().mail(from="junkmail@gmail.com")
+    emails = g.inbox().mail(sender="junkmail@gmail.com")
     for email in emails:
         email.delete()
      
