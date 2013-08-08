@@ -124,7 +124,7 @@ class Message():
         self.message = email.message_from_string(raw_email)
 
         self.to = self.message['to']
-        self.fr = self.message['fr']
+        self.fr = self.message['from']
         self.delivered_to = self.message['delivered_to']
 
         self.subject = self.message['subject']
