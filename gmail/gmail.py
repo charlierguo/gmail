@@ -156,5 +156,8 @@ class Gmail():
     def all_mail(self):
         return self.mailbox("[Gmail]/All Mail")
 
+    def important(self):
+        return self.mailbox("[Gmail]/Important")
+
     def mail_domain(self):
         return self.username.split('@')[-1]
