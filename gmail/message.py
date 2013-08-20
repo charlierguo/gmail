@@ -154,3 +154,32 @@ class Message():
 
         return self.message
 
+    # returns a list of fetched messages (both sent and received) in chronological order
+    def fetch_thread(self):
+        self.fetch()
+        original_mailbox = self.mailbox
+        self.gmail.use_mailbox(original_mailbox.name)
+
+        # fetch and cache messages from inbox or other received mailbox
+        response, results = self.gmail.imap.uid('SEARCH', None, '(X-GM-THRID ' + self.thread_id + ')')
+        received_messages = {}
+        uids = results[0].split(' ')
+        if response == 'OK':
+            for uid in uids: received_messages[uid] = Message(original_mailbox, uid)
+            self.gmail.fetch_multiple_messages(received_messages)
+            self.mailbox.messages.update(received_messages)
+
+        # fetch and cache messages from 'sent'
+        self.gmail.use_mailbox('[Gmail]/Sent Mail')
+        response, results = self.gmail.imap.uid('SEARCH', None, '(X-GM-THRID ' + self.thread_id + ')')
+        sent_messages = {}
+        uids = results[0].split(' ')
+        if response == 'OK':
+            for uid in uids: sent_messages[uid] = Message(self.gmail.mailboxes['[Gmail]/Sent Mail'], uid)
+            self.gmail.fetch_multiple_messages(sent_messages)
+            self.gmail.mailboxes['[Gmail]/Sent Mail'].messages.update(sent_messages)
+
+        self.gmail.use_mailbox(original_mailbox.name)
+
+        # combine and sort sent and received messages
+        return sorted(dict(received_messages.items() + sent_messages.items()).values(), key=lambda m: m.sent_at)
