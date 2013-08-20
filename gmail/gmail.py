@@ -156,6 +156,9 @@ class Gmail():
     def all_mail(self):
         return self.mailbox("[Gmail]/All Mail")
 
+    def sent_mail(self):
+        return self.mailbox("[Gmail]/Sent Mail")
+
     def important(self):
         return self.mailbox("[Gmail]/Important")
 
