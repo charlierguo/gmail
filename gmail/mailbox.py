@@ -66,5 +66,5 @@ class Mailbox():
     def count(*args):
         return len(self.emails(*args))
 
-    def cached_messages():
+    def cached_messages(self):
         return self.messages
