@@ -1,6 +1,7 @@
 import imaplib
 from mailbox import Mailbox
 from exceptions import *
+import re
 
 class Gmail():
     # GMail IMAP defaults
@@ -139,6 +140,16 @@ class Gmail():
             self.use_mailbox(from_mailbox)
         self.imap.uid('COPY', uid, to_mailbox)
 
+    def fetch_multiple_messages(self, messages):
+        fetch_str =  ','.join(messages.items())
+        response, results = self.imap.uid('FETCH', fetch_str, '(BODY.PEEK[] FLAGS X-GM-THRID X-GM-MSGID X-GM-LABELS)')
+        for index in xrange(len(results) - 1):
+            raw_message = results[index]
+            if re.search(r'UID (\d+)', raw_message[0]):
+                uid = re.search(r'UID (\d+)', raw_message[0]).groups(1)[0]
+                messages[uid].parse(raw_message)
+
+        return messages
 
 
     def labels(self):
