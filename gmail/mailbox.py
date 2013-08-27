@@ -65,6 +65,7 @@ class Mailbox():
 
         return emails
 
+    # WORK IN PROGRESS. NOT FOR ACTUAL USE
     def threads(self, prefetch=False, **kwargs):
         response, data = self.gmail.imap.uid('SEARCH', 'ALL')
         if response == 'OK':    
