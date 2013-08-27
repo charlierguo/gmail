@@ -6,15 +6,15 @@ and manage labels.
 
 __This library is still under development, so please forgive some of the rough edges__
 
-Heavily inspired by Kriss "nu7hatch" Kowalik's GMail for Ruby library (https://github.com/nu7hatch/gmail)
+Heavily inspired by [Kriss "nu7hatch" Kowalik's GMail for Ruby library](https://github.com/nu7hatch/gmail)
 
 ## Author
 
-* Charlie Guo [https://github.com/charlierguo]
+* [Charlie Guo](https://github.com/charlierguo)
 
 ## Installation
 
-For now, installation is manual (`pip` support not yet implemented):
+For now, installation is manual (`pip` support not yet implemented) and the only requirement is to use Python 2 (2.7+ to be precise):
 
     git clone git://github.com/charlierguo/gmail.git
 
@@ -56,7 +56,7 @@ You can also check if you are logged in at any time:
 
 ### OAuth authentication 
 
-If you have already received an OAuth2 access token from Google (https://developers.google.com/accounts/docs/OAuth2) for a given user, you can easily log the user in. (Because OAuth 1.0 usage was deprecated in April 2012, this library does not currently support its usage)
+If you have already received an [OAuth2 access token from Google](https://developers.google.com/accounts/docs/OAuth2) for a given user, you can easily log the user in. (Because OAuth 1.0 usage was deprecated in April 2012, this library does not currently support its usage)
 
     gmail = gmail.authenticate(username, access_token)
 
@@ -69,13 +69,13 @@ Get all messages in your inbox:
 Get messages that fit some criteria:
 
     g.inbox().mail(after=datetime.date(2013, 6, 18), before=datetime.date(2013, 8, 3))
-    g.inbox().mail(on=datetime.date(2009, 1, 1))
-    g.inbox().mail(fr="myfriend@gmail.com") # "from" is reserved, use "fr" or "sender"
+    g.inbox().mail(on=datetime.date(2009, 1, 1)
+    g.inbox().mail(sender="myfriend@gmail.com") # "from" is reserved, use "fr" or "sender"
     g.inbox().mail(to="directlytome@gmail.com")
 
 Combine flags and options:
 
-    g.inbox().mail(unread=True, from="myboss@gmail.com")
+    g.inbox().mail(unread=True, sender="myboss@gmail.com")
     
 Browsing labeled emails is similar to working with your inbox.
 
@@ -83,7 +83,7 @@ Browsing labeled emails is similar to working with your inbox.
     
 Every message in a conversation/thread will come as a separate message.
 
-    g.inbox().mail(unread=True, before=datetime.date(2013, 8, 3) from="myboss@gmail.com")
+    g.inbox().mail(unread=True, before=datetime.date(2013, 8, 3) sender="myboss@gmail.com")
     
 ### Working with emails
 
@@ -99,14 +99,14 @@ __Important: calls to `mail()` will return a list of empty email messages (with 
 
 Mark news past a certain date as read and archive it:
 
-    emails = g.inbox().mail(before=datetime.date(2013, 4, 18), from="news@nbcnews.com")
+    emails = g.inbox().mail(before=datetime.date(2013, 4, 18), sender="news@nbcnews.com")
     for email in emails:
         email.read() # can also unread(), delete(), spam(), or star()
         email.archive()
 
 Delete all emails from a certain person:
 
-    emails = g.inbox().mail(from="junkmail@gmail.com")
+    emails = g.inbox().mail(sender="junkmail@gmail.com")
     for email in emails:
         email.delete()
      
