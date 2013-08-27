@@ -32,6 +32,8 @@ class Mailbox():
         kwargs.get('after')  and search.extend(['SINCE', kwargs.get('after').strftime(self.date_format)])
         kwargs.get('on')     and search.extend(['ON', kwargs.get('on').strftime(self.date_format)])
 
+        kwargs.get('header') and search.extend(['HEADER', kwargs.get('header')[0], kwargs.get('header')[1]])
+
         kwargs.get('sender') and search.extend(['FROM', kwargs.get('sender')])
         kwargs.get('fr') and search.extend(['FROM', kwargs.get('fr')])
         kwargs.get('to') and search.extend(['TO', kwargs.get('to')])
@@ -46,6 +48,7 @@ class Mailbox():
         kwargs.get('query') and search.extend([kwargs.get('query')])
 
         emails = []
+        # print search
         response, data = self.gmail.imap.uid('SEARCH', *search)
         if response == 'OK':    
             uids = data[0].split(' ') 
@@ -66,6 +69,27 @@ class Mailbox():
 
         return emails
 
+    def threads(self, prefetch=False, **kwargs):
+        response, data = self.gmail.imap.uid('SEARCH', 'ALL')
+        if response == 'OK':    
+            uids = data[0].split(' ') 
+
+
+            for uid in uids:
+                if not self.messages.get(uid):
+                    self.messages[uid] = Message(self, uid)
+                emails.append(self.messages[uid])
+
+            if prefetch:
+                fetch_str = ','.join(uids)
+                response, results = self.gmail.imap.uid('FETCH', fetch_str, '(BODY.PEEK[] FLAGS X-GM-THRID X-GM-MSGID X-GM-LABELS)')
+                for index in xrange(len(results) - 1):
+                    raw_message = results[index]
+                    if re.search(r'UID (\d+)', raw_message[0]):
+                        uid = re.search(r'UID (\d+)', raw_message[0]).groups(1)[0]
+                        self.messages[uid].parse(raw_message)
+
+        return emails
 
     def count(*args):
         return len(self.emails(*args))

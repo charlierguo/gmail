@@ -13,6 +13,7 @@ class Message():
         self.gmail = mailbox.gmail if mailbox else None
 
         self.message = None
+        self.headers = {}
 
         self.subject = None
         self.body = None
@@ -104,7 +105,11 @@ class Message():
     def archive(self):
         self.move_to('[Gmail]/All Mail')
 
-
+    def parse_headers(self, message):
+        hdrs = {}
+        for hdr in message.keys():
+            hdrs[hdr] = message[hdr]
+        return hdrs
 
     def parse_flags(self, headers):
         return list(ParseFlags(headers))
@@ -122,6 +127,7 @@ class Message():
         raw_email = raw_message[1]
 
         self.message = email.message_from_string(raw_email)
+        self.headers = self.parse_headers(self.message)
 
         self.to = self.message['to']
         self.fr = self.message['from']
