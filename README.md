@@ -14,9 +14,7 @@ Heavily inspired by Kriss "nu7hatch" Kowalik's GMail for Ruby library (https://g
 
 ## Installation
 
-For now, installation is manual (`pip` support not yet implemented):
-
-    git clone git://github.com/charlierguo/gmail.git
+    pip install git+https://github.com/charlierguo/gmail.git
 
 ## Features
 
@@ -138,4 +136,5 @@ There is also few shortcuts to mark messages quickly:
 * Copyright (c) 2013 Charlie Guo
 
 See LICENSE for details.
+
 
