@@ -88,8 +88,8 @@ class Mailbox():
 
         return emails
 
-    def count(*args):
-        return len(self.emails(*args))
+    def count(self, **kwargs):
+        return len(self.mail(**kwargs))
 
     def cached_messages(self):
         return self.messages
