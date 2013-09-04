@@ -41,7 +41,7 @@ class Mailbox():
         kwargs.get('subject') and search.extend(['SUBJECT', kwargs.get('subject')])
         kwargs.get('body') and search.extend(['BODY', kwargs.get('body')])
 
-        kwargs.get('label') and search.extend(['LABEL', kwargs.get('label')])
+        kwargs.get('label') and search.extend(['X-GM-LABELS', kwargs.get('label')])
         kwargs.get('attachment') and search.extend(['HAS', 'attachment'])
 
         kwargs.get('query') and search.extend([kwargs.get('query')])
@@ -88,8 +88,8 @@ class Mailbox():
 
         return emails
 
-    def count(*args):
-        return len(self.emails(*args))
+    def count(self, **kwargs):
+        return len(self.mail(**kwargs))
 
     def cached_messages(self):
         return self.messages
