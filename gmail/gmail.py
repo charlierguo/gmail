@@ -2,7 +2,7 @@ import re
 import imaplib
 
 from mailbox import Mailbox
-from utf import encode as encode_utf7
+from utf import encode as encode_utf7, decode as decode_utf7
 from exceptions import *
 
 class Gmail():
@@ -158,8 +158,11 @@ class Gmail():
         return messages
 
 
-    def labels(self):
-        return self.mailboxes.keys()
+    def labels(self, require_unicode=False):
+        keys = self.mailboxes.keys()
+        if require_unicode:
+            keys = [decode_utf7(key) for key in keys]
+        return keys
 
     def inbox(self):
         return self.mailbox("INBOX")
