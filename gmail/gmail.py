@@ -52,7 +52,9 @@ class Gmail():
         if response == 'OK':
             for mailbox in mailbox_list:
                 mailbox_name = mailbox.split('"/"')[-1].replace('"', '').strip()
-                self.mailboxes[mailbox_name] = Mailbox(self, mailbox_name)
+                mailbox = Mailbox(self)
+                mailbox.external_name = mailbox_name
+                self.mailboxes[mailbox_name] = mailbox
 
     def use_mailbox(self, mailbox):
         if mailbox:
