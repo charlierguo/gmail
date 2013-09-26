@@ -56,7 +56,6 @@ class Gmail():
 
     def use_mailbox(self, mailbox):
         if mailbox:
-            # TODO: utf-7 encode mailbox name
             self.imap.select(mailbox)
         self.current_mailbox = mailbox
 
