@@ -1,16 +1,26 @@
 from message import Message
-from utf import encode as encode_utf7
+from utf import encode as encode_utf7, decode as decode_utf7
+
 
 class Mailbox():
 
     def __init__(self, gmail, name="INBOX"):
         self.name = name
-        # TODO: utf-7 encode mailbox name
-        self.external_name = encode_utf7(name)
         self.gmail = gmail
         self.date_format = "%d-%b-%Y"
         self.messages = {}
 
+    @property
+    def external_name(self):
+        if "external_name" not in vars(self):
+            vars(self)["external_name"] = encode_utf7(self.name)
+        return vars(self)["external_name"]
+
+    @external_name.setter
+    def external_name(self, value):
+        if "external_name" in vars(self):
+            del vars(self)["external_name"]
+        self.name = decode_utf7(value)
 
     def mail(self, prefetch=False, **kwargs):
         search = ['ALL']

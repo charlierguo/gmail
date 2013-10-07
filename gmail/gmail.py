@@ -1,7 +1,9 @@
-import imaplib
-from mailbox import Mailbox
-from exceptions import *
 import re
+import imaplib
+
+from mailbox import Mailbox
+from utf import encode as encode_utf7, decode as decode_utf7
+from exceptions import *
 
 class Gmail():
     # GMail IMAP defaults
@@ -52,16 +54,20 @@ class Gmail():
         if response == 'OK':
             for mailbox in mailbox_list:
                 mailbox_name = mailbox.split('"/"')[-1].replace('"', '').strip()
-                self.mailboxes[mailbox_name] = Mailbox(self, mailbox_name)
+                mailbox = Mailbox(self)
+                mailbox.external_name = mailbox_name
+                self.mailboxes[mailbox_name] = mailbox
 
     def use_mailbox(self, mailbox):
         if mailbox:
-            # TODO: utf-7 encode mailbox name
             self.imap.select(mailbox)
         self.current_mailbox = mailbox
 
     def mailbox(self, mailbox_name):
+        if mailbox_name not in self.mailboxes:
+            mailbox_name = encode_utf7(mailbox_name)
         mailbox = self.mailboxes.get(mailbox_name)
+
         if mailbox and not self.current_mailbox == mailbox_name:
             self.use_mailbox(mailbox_name)
 
@@ -152,8 +158,11 @@ class Gmail():
         return messages
 
 
-    def labels(self):
-        return self.mailboxes.keys()
+    def labels(self, require_unicode=False):
+        keys = self.mailboxes.keys()
+        if require_unicode:
+            keys = [decode_utf7(key) for key in keys]
+        return keys
 
     def inbox(self):
         return self.mailbox("INBOX")
