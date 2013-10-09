@@ -1,35 +1,35 @@
+from utf import encode7
+
 from message import Message
-from utf import encode as encode_utf7
+
 
 class Mailbox():
 
     def __init__(self, gmail, name="INBOX"):
         self.name = name
-        # TODO: utf-7 encode mailbox name
-        self.external_name = encode_utf7(name)
+        self.real_name = encode7(name)
         self.gmail = gmail
         self.date_format = "%d-%b-%Y"
         self.messages = {}
 
-
     def mail(self, prefetch=False, **kwargs):
         search = ['ALL']
 
-        kwargs.get('read')   and search.append('SEEN')
+        kwargs.get('read') and search.append('SEEN')
         kwargs.get('unread') and search.append('UNSEEN')
 
-        kwargs.get('starred')   and search.append('FLAGGED')
+        kwargs.get('starred') and search.append('FLAGGED')
         kwargs.get('unstarred') and search.append('UNFLAGGED')
 
-        kwargs.get('deleted')   and search.append('DELETED')
+        kwargs.get('deleted') and search.append('DELETED')
         kwargs.get('undeleted') and search.append('UNDELETED')
 
-        kwargs.get('draft')   and search.append('DRAFT')
+        kwargs.get('draft') and search.append('DRAFT')
         kwargs.get('undraft') and search.append('UNDRAFT')
 
         kwargs.get('before') and search.extend(['BEFORE', kwargs.get('before').strftime(self.date_format)])
-        kwargs.get('after')  and search.extend(['SINCE', kwargs.get('after').strftime(self.date_format)])
-        kwargs.get('on')     and search.extend(['ON', kwargs.get('on').strftime(self.date_format)])
+        kwargs.get('after') and search.extend(['SINCE', kwargs.get('after').strftime(self.date_format)])
+        kwargs.get('on') and search.extend(['ON', kwargs.get('on').strftime(self.date_format)])
 
         kwargs.get('header') and search.extend(['HEADER', kwargs.get('header')[0], kwargs.get('header')[1]])
 
@@ -49,8 +49,8 @@ class Mailbox():
         emails = []
         # print search
         response, data = self.gmail.imap.uid('SEARCH', *search)
-        if response == 'OK':    
-            uids = filter(None, data[0].split(' ')) # filter out empty strings
+        if response == 'OK':
+            uids = filter(None, data[0].split(' '))  # filter out empty strings
 
             for uid in uids:
                 if not self.messages.get(uid):
@@ -68,9 +68,8 @@ class Mailbox():
     # WORK IN PROGRESS. NOT FOR ACTUAL USE
     def threads(self, prefetch=False, **kwargs):
         response, data = self.gmail.imap.uid('SEARCH', 'ALL')
-        if response == 'OK':    
-            uids = data[0].split(' ') 
-
+        if response == 'OK':
+            uids = data[0].split(' ')
 
             for uid in uids:
                 if not self.messages.get(uid):
