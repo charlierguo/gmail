@@ -1,7 +1,11 @@
 import imaplib
-from mailbox import Mailbox
-from exceptions import *
 import re
+
+from utf import encode7, decode7, u
+
+from exceptions import *
+from mailbox import Mailbox
+
 
 class Gmail():
     # GMail IMAP defaults
@@ -24,9 +28,7 @@ class Gmail():
         self.mailboxes = {}
         self.current_mailbox = None
 
-
         # self.connect()
-
 
     def connect(self, raise_errors=True):
         # try:
@@ -46,21 +48,23 @@ class Gmail():
 
         return self.imap
 
-
     def fetch_mailboxes(self):
         response, mailbox_list = self.imap.list()
         if response == 'OK':
             for mailbox in mailbox_list:
                 mailbox_name = mailbox.split('"/"')[-1].replace('"', '').strip()
-                self.mailboxes[mailbox_name] = Mailbox(self, mailbox_name)
+                decoded_name = decode7(mailbox_name)
+                self.mailboxes[decoded_name] = Mailbox(self, decoded_name)
 
     def use_mailbox(self, mailbox):
+        mailbox = u(mailbox)
         if mailbox:
-            # TODO: utf-7 encode mailbox name
-            self.imap.select(mailbox)
+            real_maibox_name = encode7(mailbox)
+            self.imap.select(real_maibox_name)
         self.current_mailbox = mailbox
 
     def mailbox(self, mailbox_name):
+        mailbox_name = u(mailbox_name)
         mailbox = self.mailboxes.get(mailbox_name)
         if mailbox and not self.current_mailbox == mailbox_name:
             self.use_mailbox(mailbox_name)
@@ -68,21 +72,23 @@ class Gmail():
         return mailbox
 
     def create_mailbox(self, mailbox_name):
+        mailbox_name = u(mailbox_name)
         mailbox = self.mailboxes.get(mailbox_name)
         if not mailbox:
-            self.imap.create(mailbox_name)
+            real_mailbox_name = encode7(mailbox_name)
+            self.imap.create(real_mailbox_name)
             mailbox = Mailbox(self, mailbox_name)
             self.mailboxes[mailbox_name] = mailbox
 
         return mailbox
 
     def delete_mailbox(self, mailbox_name):
+        mailbox_name = u(mailbox_name)
         mailbox = self.mailboxes.get(mailbox_name)
         if mailbox:
-            self.imap.delete(mailbox_name)
+            real_maibox_name = encode7(mailbox_name)
+            self.imap.delete(real_maibox_name)
             del self.mailboxes[mailbox_name]
-
-
 
     def login(self, username, password):
         self.username = username
@@ -98,7 +104,6 @@ class Gmail():
                 self.fetch_mailboxes()
         except imaplib.IMAP4.error:
             raise AuthenticationError
-
 
         # smtp_login(username, password)
 
@@ -126,7 +131,6 @@ class Gmail():
         self.imap.logout()
         self.logged_in = False
 
-
     def label(self, label_name):
         return self.mailbox(label_name)
 
@@ -134,14 +138,13 @@ class Gmail():
         box = self.mailbox(mailbox_name)
         return box.mail(**kwargs)
 
-    
     def copy(self, uid, to_mailbox, from_mailbox=None):
         if from_mailbox:
             self.use_mailbox(from_mailbox)
-        self.imap.uid('COPY', uid, to_mailbox)
+        self.imap.uid('COPY', uid, encode7(to_mailbox))
 
     def fetch_multiple_messages(self, messages):
-        fetch_str =  ','.join(messages.keys())
+        fetch_str = ','.join(messages.keys())
         response, results = self.imap.uid('FETCH', fetch_str, '(BODY.PEEK[] FLAGS X-GM-THRID X-GM-MSGID X-GM-LABELS)')
         for index in xrange(len(results) - 1):
             raw_message = results[index]
@@ -150,7 +153,6 @@ class Gmail():
                 messages[uid].parse(raw_message)
 
         return messages
-
 
     def labels(self):
         return self.mailboxes.keys()

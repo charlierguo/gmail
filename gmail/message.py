@@ -4,8 +4,8 @@ import re
 import time
 from imaplib import ParseFlags
 
-class Message():
 
+class Message():
 
     def __init__(self, mailbox, uid):
         self.uid = uid
@@ -32,19 +32,20 @@ class Message():
         self.thread = []
         self.message_id = None
 
-
     def is_read(self):
         return ('\\Seen' in self.flags)
 
     def read(self):
         flag = '\\Seen'
         self.gmail.imap.uid('STORE', self.uid, '+FLAGS', flag)
-        if flag not in self.flags: self.flags.append(flag)
+        if flag not in self.flags:
+            self.flags.append(flag)
 
     def unread(self):
         flag = '\\Seen'
         self.gmail.imap.uid('STORE', self.uid, '-FLAGS', flag)
-        if flag in self.flags: self.flags.remove(flag)
+        if flag in self.flags:
+            self.flags.remove(flag)
 
     def is_starred(self):
         return ('\\Flagged' in self.flags)
@@ -52,12 +53,14 @@ class Message():
     def star(self):
         flag = '\\Flagged'
         self.gmail.imap.uid('STORE', self.uid, '+FLAGS', flag)
-        if flag not in self.flags: self.flags.append(flag)
+        if flag not in self.flags:
+            self.flags.append(flag)
 
     def unstar(self):
         flag = '\\Flagged'
         self.gmail.imap.uid('STORE', self.uid, '-FLAGS', flag)
-        if flag in self.flags: self.flags.remove(flag)
+        if flag in self.flags:
+            self.flags.remove(flag)
 
     def is_draft(self):
         return ('\\Draft' in self.flags)
@@ -69,13 +72,14 @@ class Message():
     def add_label(self, label):
         full_label = '%s' % label
         self.gmail.imap.uid('STORE', self.uid, '+X-GM-LABELS', full_label)
-        if full_label not in self.labels: self.labels.append(full_label)
+        if full_label not in self.labels:
+            self.labels.append(full_label)
 
     def remove_label(self, label):
         full_label = '%s' % label
         self.gmail.imap.uid('STORE', self.uid, '-X-GM-LABELS', full_label)
-        if full_label in self.labels: self.labels.remove(full_label)
-
+        if full_label in self.labels:
+            self.labels.remove(full_label)
 
     def is_deleted(self):
         return ('\\Deleted' in self.flags)
@@ -83,10 +87,11 @@ class Message():
     def delete(self):
         flag = '\\Deleted'
         self.gmail.imap.uid('STORE', self.uid, '+FLAGS', flag)
-        if flag not in self.flags: self.flags.append(flag)
+        if flag not in self.flags:
+            self.flags.append(flag)
 
         trash = '[Gmail]/Trash' if '[Gmail]/Trash' in self.gmail.labels() else '[Gmail]/Bin'
-        if self.mailbox.name not in ['[Gmail]/Bin', '[Gmail]/Trash']:
+        if self.mailbox.real_name not in ['[Gmail]/Bin', '[Gmail]/Trash']:
             self.move_to(trash)
 
     # def undelete(self):
@@ -94,13 +99,10 @@ class Message():
     #     self.gmail.imap.uid('STORE', self.uid, '-FLAGS', flag)
     #     if flag in self.flags: self.flags.remove(flag)
 
-
     def move_to(self, name):
         self.gmail.copy(self.uid, name, self.mailbox.name)
         if name not in ['[Gmail]/Bin', '[Gmail]/Trash']:
             self.delete()
-
-
 
     def archive(self):
         self.move_to('[Gmail]/All Mail')
@@ -135,7 +137,7 @@ class Message():
 
         self.subject = self.message['subject']
         if self.message.get_content_maintype() == "multipart":
-            for content in self.message.walk():       
+            for content in self.message.walk():
                 if content.get_content_type() == "text/plain":
                     self.body = content.get_payload(decode=True)
         elif self.message.get_content_maintype() == "text":
@@ -164,14 +166,15 @@ class Message():
     def fetch_thread(self):
         self.fetch()
         original_mailbox = self.mailbox
-        self.gmail.use_mailbox(original_mailbox.name)
+        self.gmail.use_mailbox(original_mailbox.real_name)
 
         # fetch and cache messages from inbox or other received mailbox
         response, results = self.gmail.imap.uid('SEARCH', None, '(X-GM-THRID ' + self.thread_id + ')')
         received_messages = {}
         uids = results[0].split(' ')
         if response == 'OK':
-            for uid in uids: received_messages[uid] = Message(original_mailbox, uid)
+            for uid in uids:
+                received_messages[uid] = Message(original_mailbox, uid)
             self.gmail.fetch_multiple_messages(received_messages)
             self.mailbox.messages.update(received_messages)
 
@@ -181,11 +184,12 @@ class Message():
         sent_messages = {}
         uids = results[0].split(' ')
         if response == 'OK':
-            for uid in uids: sent_messages[uid] = Message(self.gmail.mailboxes['[Gmail]/Sent Mail'], uid)
+            for uid in uids:
+                sent_messages[uid] = Message(self.gmail.mailboxes['[Gmail]/Sent Mail'], uid)
             self.gmail.fetch_multiple_messages(sent_messages)
             self.gmail.mailboxes['[Gmail]/Sent Mail'].messages.update(sent_messages)
 
-        self.gmail.use_mailbox(original_mailbox.name)
+        self.gmail.use_mailbox(original_mailbox.real_name)
 
         # combine and sort sent and received messages
         return sorted(dict(received_messages.items() + sent_messages.items()).values(), key=lambda m: m.sent_at)
