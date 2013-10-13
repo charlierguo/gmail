@@ -67,6 +67,7 @@ class Mailbox():
 
     # WORK IN PROGRESS. NOT FOR ACTUAL USE
     def threads(self, prefetch=False, **kwargs):
+        emails = []
         response, data = self.gmail.imap.uid('SEARCH', 'ALL')
         if response == 'OK':    
             uids = data[0].split(' ') 
