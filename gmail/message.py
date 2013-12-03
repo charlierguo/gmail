@@ -2,6 +2,7 @@ import datetime
 import email
 import re
 import time
+import os
 from imaplib import ParseFlags
 
 class Message():
@@ -31,6 +32,9 @@ class Message():
         self.thread_id = None
         self.thread = []
         self.message_id = None
+ 
+        self.attachments = None
+        
 
 
     def is_read(self):
@@ -152,6 +156,11 @@ class Message():
         if re.search(r'X-GM-MSGID (\d+)', raw_headers):
             self.message_id = re.search(r'X-GM-MSGID (\d+)', raw_headers).groups(1)[0]
 
+        
+        # Parse attachments into attachment objects array for this message
+        self.attachments = [Attachment(attachment) for attachment in self.message._payload if attachment.get('Content-Disposition') is not None]
+        
+
     def fetch(self):
         if not self.message:
             response, results = self.gmail.imap.uid('FETCH', self.uid, '(BODY.PEEK[] FLAGS X-GM-THRID X-GM-MSGID X-GM-LABELS)')
@@ -189,3 +198,24 @@ class Message():
 
         # combine and sort sent and received messages
         return sorted(dict(received_messages.items() + sent_messages.items()).values(), key=lambda m: m.sent_at)
+
+
+class Attachment:
+
+    def __init__(self, attachment):
+        self.name = attachment.get_filename()
+        # Raw file data
+        self.payload = attachment.get_payload(decode=True)
+        # Filesize in kilobytes
+        self.size = int(round(len(self.payload)/1000.0))
+
+    def save(self, path=None):
+        if path is None:
+            # Save as name of attachment if there is no path specified
+            path = self.name
+        elif os.path.isdir(path):
+            # If the path is a directory, save as name of attachment in that directory
+            path = os.path.join(path, self.name)
+
+        with open(path, 'wb') as f:
+            f.write(self.payload)

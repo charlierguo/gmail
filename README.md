@@ -117,6 +117,21 @@ You can use also `label` method instead of `mailbox`:
 Add a label to a message:
 
     email.add_label("Faxes")
+
+Download message attachments:
+
+    num = 1
+    for attachment in email.attachments:
+        print 'Downloading attachment: ' + attachment.name
+        print 'Size: ' + str(attachment.size) + ' KB'
+        # Will save to current directory as attachment.name
+        attachment.save()
+        # Will save to attachments directory as attachment.name
+        attachment.save('attachments')
+        # Will save to attachments directory as specified name
+        name = 'file' + str(num)
+        num += 1
+        attachment.save('attachments/' + name)
     
 There is also few shortcuts to mark messages quickly:
 
