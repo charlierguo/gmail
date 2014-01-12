@@ -138,6 +138,8 @@ class Message():
             for content in self.message.walk():       
                 if content.get_content_type() == "text/plain":
                     self.body = content.get_payload(decode=True)
+                elif content.get_content_type() == "text/html":
+                    self.body = content.get_payload(decode=True)
         elif self.message.get_content_maintype() == "text":
             self.body = self.message.get_payload()
 
