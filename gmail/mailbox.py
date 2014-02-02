@@ -67,7 +67,7 @@ class Mailbox():
                     self.messages[uid] = Message(self, uid)
                 emails.append(self.messages[uid])
 
-            if prefetch:
+            if prefetch and emails:
                 messages_dict = {}
                 for email in emails:
                     messages_dict[email.uid] = email
