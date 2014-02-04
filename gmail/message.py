@@ -3,6 +3,7 @@ import email
 import re
 import time
 import os
+from email.header import decode_header, make_header
 from imaplib import ParseFlags
 
 class Message():
@@ -127,6 +128,11 @@ class Message():
         else:
             return list()
 
+    def parse_subject(self, encoded_subject):
+        dh = decode_header(encoded_subject)
+        default_charset = 'ASCII'
+        return ''.join([ unicode(t[0], t[1] or default_charset) for t in dh ])
+
     def parse(self, raw_message):
         raw_headers = raw_message[0]
         raw_email = raw_message[1]
@@ -138,7 +144,8 @@ class Message():
         self.fr = self.message['from']
         self.delivered_to = self.message['delivered_to']
 
-        self.subject = self.message['subject']
+        self.subject = self.parse_subject(self.message['subject'])
+
         if self.message.get_content_maintype() == "multipart":
             for content in self.message.walk():
                 if content.get_content_type() == "text/plain":
@@ -161,7 +168,10 @@ class Message():
 
         
         # Parse attachments into attachment objects array for this message
-        self.attachments = [Attachment(attachment) for attachment in self.message._payload if attachment.get('Content-Disposition') is not None]
+        self.attachments = [
+            Attachment(attachment) for attachment in self.message._payload
+                if not isinstance(attachment, basestring) and attachment.get('Content-Disposition') is not None
+        ]
         
 
     def fetch(self):
