@@ -161,7 +161,10 @@ class Message():
 
         
         # Parse attachments into attachment objects array for this message
-        self.attachments = [Attachment(attachment) for attachment in self.message._payload if attachment.get('Content-Disposition') is not None]
+        self.attachments = [
+            Attachment(attachment) for attachment in self.message._payload
+                if not isinstance(attachment, basestring) and attachment.get('Content-Disposition') is not None
+        ]
         
 
     def fetch(self):
