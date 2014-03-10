@@ -54,8 +54,10 @@ class Gmail():
         if response == 'OK':
             for mailbox in mailbox_list:
                 mailbox_name = mailbox.split('"/"')[-1].replace('"', '').strip()
+                mailbox_attrs = mailbox.split('"/"')[0]
                 mailbox = Mailbox(self)
                 mailbox.external_name = mailbox_name
+                mailbox.attrs = mailbox_attrs
                 self.mailboxes[mailbox_name] = mailbox
 
     def use_mailbox(self, mailbox):
@@ -140,7 +142,7 @@ class Gmail():
         box = self.mailbox(mailbox_name)
         return box.mail(**kwargs)
 
-    
+
     def copy(self, uid, to_mailbox, from_mailbox=None):
         if from_mailbox:
             self.use_mailbox(from_mailbox)

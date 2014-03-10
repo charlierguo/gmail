@@ -9,6 +9,7 @@ class Mailbox():
         self.gmail = gmail
         self.date_format = "%d-%b-%Y"
         self.messages = {}
+        self.attrs = ""
 
     @property
     def external_name(self):
