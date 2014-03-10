@@ -3,6 +3,7 @@ import email
 import re
 import time
 import os
+
 from email.header import decode_header, make_header
 from imaplib import ParseFlags
 
@@ -121,8 +122,8 @@ class Message():
         else:
             return list()
 
-    def parse_subject(self, encoded_subject):
-        dh = decode_header(encoded_subject)
+    def parse_header(self, encoded_header):
+        dh = decode_header(encoded_header)
         default_charset = 'ASCII'
         return ''.join([ unicode(t[0], t[1] or default_charset) for t in dh ])
 
@@ -131,28 +132,27 @@ class Message():
         raw_email = raw_message[1]
 
         self.message = email.message_from_string(raw_email)
+
+        def to_unicode(value, charset):
+            r = value
+            if charset:
+                r = unicode(r, charset, 'ignore').encode('utf8', 'replace')
+            return r
+
         self.headers = self.parse_headers(self.message)
 
-        self.to = self.message['to']
-        self.fr = self.message['from']
-        self.delivered_to = self.message['delivered_to']
-
-        self.subject = self.parse_subject(self.message['subject'])
+        self.to = self.parse_header(self.message['to'])
+        self.fr = self.parse_header(self.message['from'])
+        self.subject = self.parse_header(self.message['subject'])
 
         if self.message.get_content_maintype() == "multipart":
             for content in self.message.walk():
                 if content.get_content_type() == "text/plain":
-                    self.body = content.get_payload(decode=True)
-                    if content.get_content_charset():
-                        self.body = unicode(self.body, content.get_content_charset(), 'ignore').encode('utf8', 'replace')
+                    self.body = to_unicode(content.get_payload(decode=True), content.get_content_charset())
                 elif content.get_content_type() == "text/html":
-                    self.html = content.get_payload(decode=True)
-                    if content.get_content_charset():
-                        self.html = unicode(self.html, content.get_content_charset(), 'ignore').encode('utf8', 'replace')
+                    self.html = to_unicode(content.get_payload(decode=True), content.get_content_charset())
         elif self.message.get_content_maintype() == "text":
-            self.body = self.message.get_payload(decode=True)
-            if self.message.get_content_charset():
-                self.body = unicode(self.body, self.message.get_content_charset(), 'ignore').encode('utf8', 'replace')
+            self.body = to_unicode(self.message.get_payload(decode=True), self.message.get_content_charset())
 
         self.sent_at = datetime.datetime.fromtimestamp(time.mktime(email.utils.parsedate_tz(self.message['date'])[:9]))
 
@@ -164,7 +164,6 @@ class Message():
             self.thread_id = re.search(r'X-GM-THRID (\d+)', raw_headers).groups(1)[0]
         if re.search(r'X-GM-MSGID (\d+)', raw_headers):
             self.message_id = re.search(r'X-GM-MSGID (\d+)', raw_headers).groups(1)[0]
-
 
         # Parse attachments into attachment objects array for this message
         self.attachments = [
