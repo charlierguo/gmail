@@ -55,11 +55,12 @@ class Mailbox():
         kwargs.get('attachment') and search.extend(['HAS', 'attachment'])
 
         kwargs.get('query') and search.extend([kwargs.get('query')])
+        kwargs.get('custom_query') and search.extend(kwargs.get('custom_query'))
 
         emails = []
         # print search
         response, data = self.gmail.imap.uid('SEARCH', *search)
-        if response == 'OK':    
+        if response == 'OK':
             uids = filter(None, data[0].split(' ')) # filter out empty strings
 
             for uid in uids:
@@ -79,8 +80,8 @@ class Mailbox():
     def threads(self, prefetch=False, **kwargs):
         emails = []
         response, data = self.gmail.imap.uid('SEARCH', 'ALL')
-        if response == 'OK':    
-            uids = data[0].split(' ') 
+        if response == 'OK':
+            uids = data[0].split(' ')
 
 
             for uid in uids:
