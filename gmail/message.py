@@ -7,8 +7,6 @@ from email.header import decode_header, make_header
 from imaplib import ParseFlags
 
 class Message():
-
-
     def __init__(self, mailbox, uid):
         self.uid = uid
         self.mailbox = mailbox
@@ -34,10 +32,8 @@ class Message():
         self.thread_id = None
         self.thread = []
         self.message_id = None
- 
-        self.attachments = None
-        
 
+        self.attachments = None
 
     def is_read(self):
         return ('\\Seen' in self.flags)
@@ -82,7 +78,6 @@ class Message():
         self.gmail.imap.uid('STORE', self.uid, '-X-GM-LABELS', full_label)
         if full_label in self.labels: self.labels.remove(full_label)
 
-
     def is_deleted(self):
         return ('\\Deleted' in self.flags)
 
@@ -105,8 +100,6 @@ class Message():
         self.gmail.copy(self.uid, name, self.mailbox.name)
         if name not in ['[Gmail]/Bin', '[Gmail]/Trash']:
             self.delete()
-
-
 
     def archive(self):
         self.move_to('[Gmail]/All Mail')
@@ -150,8 +143,12 @@ class Message():
             for content in self.message.walk():
                 if content.get_content_type() == "text/plain":
                     self.body = content.get_payload(decode=True)
+                    if content.get_content_charset():
+                        self.body = unicode(self.body, content.get_content_charset(), 'ignore').encode('utf8', 'replace')
                 elif content.get_content_type() == "text/html":
                     self.html = content.get_payload(decode=True)
+                    if content.get_content_charset():
+                        self.html = unicode(self.html, content.get_content_charset(), 'ignore').encode('utf8', 'replace')
         elif self.message.get_content_maintype() == "text":
             self.body = self.message.get_payload()
 
@@ -166,13 +163,13 @@ class Message():
         if re.search(r'X-GM-MSGID (\d+)', raw_headers):
             self.message_id = re.search(r'X-GM-MSGID (\d+)', raw_headers).groups(1)[0]
 
-        
+
         # Parse attachments into attachment objects array for this message
         self.attachments = [
             Attachment(attachment) for attachment in self.message._payload
                 if not isinstance(attachment, basestring) and attachment.get('Content-Disposition') is not None
         ]
-        
+
 
     def fetch(self):
         if not self.message:
