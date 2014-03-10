@@ -150,7 +150,9 @@ class Message():
                     if content.get_content_charset():
                         self.html = unicode(self.html, content.get_content_charset(), 'ignore').encode('utf8', 'replace')
         elif self.message.get_content_maintype() == "text":
-            self.body = self.message.get_payload()
+            self.body = self.message.get_payload(decode=True)
+            if self.message.get_content_charset():
+                self.body = unicode(self.body, self.message.get_content_charset(), 'ignore').encode('utf8', 'replace')
 
         self.sent_at = datetime.datetime.fromtimestamp(time.mktime(email.utils.parsedate_tz(self.message['date'])[:9]))
 
