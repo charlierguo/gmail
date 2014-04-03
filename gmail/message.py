@@ -122,10 +122,21 @@ class Message():
         else:
             return list()
 
+    def try_parse(self, header, encoding):
+        if encoding is None:
+            encoding = 'ASCII'
+
+        try:
+            return unicode(header, encoding)
+        except UnicodeDecodeError:
+            try:
+                return unicode(header, 'ISO-8859-1')
+            except UnicodeDecodeError:
+                return unicode(header, 'UTF-8')
+
     def parse_header(self, encoded_header):
         dh = decode_header(encoded_header)
-        default_charset = 'ASCII'
-        return ''.join([ unicode(t[0], t[1] or default_charset) for t in dh ])
+        return ''.join([self.try_parse(t[0], t[1]) for t in dh])
 
     def parse(self, raw_message):
         raw_headers = raw_message[0]
@@ -134,9 +145,8 @@ class Message():
         self.message = email.message_from_string(raw_email)
 
         def to_unicode(value, charset):
-            r = value
-            if charset:
-                r = unicode(r, charset, 'ignore').encode('utf8', 'replace')
+            r = self.try_parse(value, charset)
+
             return r
 
         self.headers = self.parse_headers(self.message)
