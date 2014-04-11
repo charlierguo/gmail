@@ -1,5 +1,7 @@
-from message import Message
+import re
 from utf import encode as encode_utf7, decode as decode_utf7
+
+from message import Message
 
 
 class Mailbox():
@@ -26,21 +28,21 @@ class Mailbox():
     def mail(self, prefetch=False, **kwargs):
         search = ['ALL']
 
-        kwargs.get('read')   and search.append('SEEN')
+        kwargs.get('read') and search.append('SEEN')
         kwargs.get('unread') and search.append('UNSEEN')
 
-        kwargs.get('starred')   and search.append('FLAGGED')
+        kwargs.get('starred') and search.append('FLAGGED')
         kwargs.get('unstarred') and search.append('UNFLAGGED')
 
-        kwargs.get('deleted')   and search.append('DELETED')
+        kwargs.get('deleted') and search.append('DELETED')
         kwargs.get('undeleted') and search.append('UNDELETED')
 
-        kwargs.get('draft')   and search.append('DRAFT')
+        kwargs.get('draft') and search.append('DRAFT')
         kwargs.get('undraft') and search.append('UNDRAFT')
 
         kwargs.get('before') and search.extend(['BEFORE', kwargs.get('before').strftime(self.date_format)])
-        kwargs.get('after')  and search.extend(['SINCE', kwargs.get('after').strftime(self.date_format)])
-        kwargs.get('on')     and search.extend(['ON', kwargs.get('on').strftime(self.date_format)])
+        kwargs.get('after') and search.extend(['SINCE', kwargs.get('after').strftime(self.date_format)])
+        kwargs.get('on') and search.extend(['ON', kwargs.get('on').strftime(self.date_format)])
 
         kwargs.get('header') and search.extend(['HEADER', kwargs.get('header')[0], kwargs.get('header')[1]])
 
@@ -62,7 +64,7 @@ class Mailbox():
         # print search
         response, data = self.gmail.imap.uid('SEARCH', *search)
         if response == 'OK':
-            uids = filter(None, data[0].split(' ')) # filter out empty strings
+            uids = filter(None, data[0].split(' '))  # filter out empty strings
 
             for uid in uids:
                 if not self.messages.get(uid):
@@ -83,7 +85,6 @@ class Mailbox():
         response, data = self.gmail.imap.uid('SEARCH', 'ALL')
         if response == 'OK':
             uids = data[0].split(' ')
-
 
             for uid in uids:
                 if not self.messages.get(uid):

@@ -4,8 +4,9 @@ import re
 import time
 import os
 
-from email.header import decode_header, make_header
+from email.header import decode_header
 from imaplib import ParseFlags
+
 
 class Message():
     def __init__(self, mailbox, uid):
@@ -42,12 +43,14 @@ class Message():
     def read(self):
         flag = '\\Seen'
         self.gmail.imap.uid('STORE', self.uid, '+FLAGS', flag)
-        if flag not in self.flags: self.flags.append(flag)
+        if flag not in self.flags:
+            self.flags.append(flag)
 
     def unread(self):
         flag = '\\Seen'
         self.gmail.imap.uid('STORE', self.uid, '-FLAGS', flag)
-        if flag in self.flags: self.flags.remove(flag)
+        if flag in self.flags:
+            self.flags.remove(flag)
 
     def is_starred(self):
         return ('\\Flagged' in self.flags)
@@ -55,12 +58,14 @@ class Message():
     def star(self):
         flag = '\\Flagged'
         self.gmail.imap.uid('STORE', self.uid, '+FLAGS', flag)
-        if flag not in self.flags: self.flags.append(flag)
+        if flag not in self.flags:
+            self.flags.append(flag)
 
     def unstar(self):
         flag = '\\Flagged'
         self.gmail.imap.uid('STORE', self.uid, '-FLAGS', flag)
-        if flag in self.flags: self.flags.remove(flag)
+        if flag in self.flags:
+            self.flags.remove(flag)
 
     def is_draft(self):
         return ('\\Draft' in self.flags)
@@ -72,12 +77,14 @@ class Message():
     def add_label(self, label):
         full_label = '%s' % label
         self.gmail.imap.uid('STORE', self.uid, '+X-GM-LABELS', full_label)
-        if full_label not in self.labels: self.labels.append(full_label)
+        if full_label not in self.labels:
+            self.labels.append(full_label)
 
     def remove_label(self, label):
         full_label = '%s' % label
         self.gmail.imap.uid('STORE', self.uid, '-X-GM-LABELS', full_label)
-        if full_label in self.labels: self.labels.remove(full_label)
+        if full_label in self.labels:
+            self.labels.remove(full_label)
 
     def is_deleted(self):
         return ('\\Deleted' in self.flags)
@@ -85,7 +92,8 @@ class Message():
     def delete(self):
         flag = '\\Deleted'
         self.gmail.imap.uid('STORE', self.uid, '+FLAGS', flag)
-        if flag not in self.flags: self.flags.append(flag)
+        if flag not in self.flags:
+            self.flags.append(flag)
 
         trash = '[Gmail]/Trash' if '[Gmail]/Trash' in self.gmail.labels() else '[Gmail]/Bin'
         if self.mailbox.name not in ['[Gmail]/Bin', '[Gmail]/Trash']:
@@ -95,7 +103,6 @@ class Message():
     #     flag = '\\Deleted'
     #     self.gmail.imap.uid('STORE', self.uid, '-FLAGS', flag)
     #     if flag in self.flags: self.flags.remove(flag)
-
 
     def move_to(self, name):
         self.gmail.copy(self.uid, name, self.mailbox.name)
@@ -181,7 +188,6 @@ class Message():
                 if not isinstance(attachment, basestring) and attachment.get('Content-Disposition') is not None and attachment.get_filename() is not None
         ]
 
-
     def fetch(self):
         if not self.message:
             response, results = self.gmail.imap.uid('FETCH', self.uid, '(BODY.PEEK[] FLAGS X-GM-THRID X-GM-MSGID X-GM-LABELS)')
@@ -201,7 +207,8 @@ class Message():
         received_messages = {}
         uids = results[0].split(' ')
         if response == 'OK':
-            for uid in uids: received_messages[uid] = Message(original_mailbox, uid)
+            for uid in uids:
+                received_messages[uid] = Message(original_mailbox, uid)
             self.gmail.fetch_multiple_messages(received_messages)
             self.mailbox.messages.update(received_messages)
 
@@ -211,7 +218,8 @@ class Message():
         sent_messages = {}
         uids = results[0].split(' ')
         if response == 'OK':
-            for uid in uids: sent_messages[uid] = Message(self.gmail.mailboxes['[Gmail]/Sent Mail'], uid)
+            for uid in uids:
+                sent_messages[uid] = Message(self.gmail.mailboxes['[Gmail]/Sent Mail'], uid)
             self.gmail.fetch_multiple_messages(sent_messages)
             self.gmail.mailboxes['[Gmail]/Sent Mail'].messages.update(sent_messages)
 
@@ -228,7 +236,7 @@ class Attachment:
         # Raw file data
         self.payload = attachment.get_payload(decode=True)
         # Filesize in kilobytes
-        self.size = int(round(len(self.payload)/1000.0))
+        self.size = int(round(len(self.payload) / 1000.0))
 
     def save(self, path=None):
         if path is None:

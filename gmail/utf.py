@@ -10,10 +10,10 @@
 # distribute, sublicense, and/or sell copies of the Software, and to
 # permit persons to whom the Software is furnished to do so, subject to
 # the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be
 # included in all copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 # EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 # MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -26,6 +26,7 @@ text_type = unicode
 binary_type = str
 
 PRINTABLE = set(range(0x20, 0x26)) | set(range(0x27, 0x7f))
+
 
 def encode(s):
     """Encode a folder name using IMAP modified UTF-7 encoding.
@@ -56,6 +57,7 @@ def encode(s):
     extend_result_if_chars_buffered()
 
     return ''.join(r)
+
 
 def decode(s):
     """Decode a folder name from IMAP modified UTF-7 encoding to unicode.
@@ -88,10 +90,12 @@ def decode(s):
 
     return ''.join(r)
 
+
 def modified_utf7(s):
     # encode to utf-7: '\xff' => b'+AP8-', decode from latin-1 => '+AP8-'
     s_utf7 = s.encode('utf-7').decode('latin-1')
     return s_utf7[1:-1].replace('/', ',')
+
 
 def modified_deutf7(s):
     s_utf7 = '+' + s.replace(',', '/') + '-'
