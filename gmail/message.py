@@ -230,13 +230,17 @@ class Message():
 
 
 class Attachment:
-
     def __init__(self, attachment):
         self.name = attachment.get_filename()
         # Raw file data
-        self.payload = attachment.get_payload(decode=True)
-        # Filesize in kilobytes
-        self.size = int(round(len(self.payload) / 1000.0))
+        if isinstance(attachment.get_payload(), basestring):
+            self.payload = attachment.get_payload(decode=True)
+            # Filesize in kilobytes
+            self.size = int(round(len(self.payload) / 1000.0))
+        else:
+            # Special case. Seems to occurs only for EML attachments.
+            self.payload = None
+            self.size = None
 
     def save(self, path=None):
         if path is None:
