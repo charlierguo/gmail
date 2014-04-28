@@ -177,7 +177,10 @@ class Message():
         elif self.message.get_content_maintype() == "text":
             self.body = to_unicode(self.message.get_payload(decode=True), self.message.get_content_charset())
 
-        self.sent_at = datetime.datetime.fromtimestamp(time.mktime(email.utils.parsedate_tz(self.message['date'])[:9]))
+        try:
+            self.sent_at = datetime.datetime.fromtimestamp(time.mktime(email.utils.parsedate_tz(self.message['date'])[:9]))
+        except:
+            self.sent_at = datetime.datetime.now()
 
         self.flags = self.parse_flags(raw_headers)
 
