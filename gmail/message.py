@@ -135,7 +135,7 @@ class Message():
 
         try:
             return unicode(header, encoding)
-        except UnicodeDecodeError:
+        except (UnicodeDecodeError, LookupError):
             try:
                 return unicode(header, 'ISO-8859-1')
             except UnicodeDecodeError:
