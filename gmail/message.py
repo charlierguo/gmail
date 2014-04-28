@@ -8,6 +8,24 @@ from email.header import decode_header
 from imaplib import ParseFlags
 
 
+def try_parse(header, encoding="ASCII"):
+    """
+    Try to decode specified header using specified encoding.
+    On failure to do so, use ISO-8859-1, and then UTF-8.
+    Header and encoding are most often return from decode_header.
+    """
+    if encoding is None:
+        encoding = 'ASCII'
+
+    try:
+        return unicode(header, encoding)
+    except (UnicodeDecodeError, LookupError):
+        try:
+            return unicode(header, 'ISO-8859-1')
+        except UnicodeDecodeError:
+            return unicode(header, 'UTF-8')
+
+
 class Message():
     def __init__(self, mailbox, uid):
         self.uid = uid
@@ -129,21 +147,9 @@ class Message():
         else:
             return list()
 
-    def try_parse(self, header, encoding):
-        if encoding is None:
-            encoding = 'ASCII'
-
-        try:
-            return unicode(header, encoding)
-        except (UnicodeDecodeError, LookupError):
-            try:
-                return unicode(header, 'ISO-8859-1')
-            except UnicodeDecodeError:
-                return unicode(header, 'UTF-8')
-
     def parse_header(self, encoded_header):
         dh = decode_header(encoded_header)
-        return ''.join([self.try_parse(t[0], t[1]) for t in dh])
+        return ''.join([try_parse(t[0], t[1]) for t in dh])
 
     def parse(self, raw_message):
         raw_headers = raw_message[0]
@@ -152,7 +158,7 @@ class Message():
         self.message = email.message_from_string(raw_email)
 
         def to_unicode(value, charset):
-            r = self.try_parse(value, charset)
+            r = try_parse(value, charset)
 
             return r
 
@@ -231,7 +237,9 @@ class Message():
 
 class Attachment:
     def __init__(self, attachment):
-        self.name = attachment.get_filename()
+        dh = decode_header(attachment.get_filename())
+        self.name = ''.join([try_parse(t[0], t[1]) for t in dh])
+
         # Raw file data
         if isinstance(attachment.get_payload(), basestring):
             self.payload = attachment.get_payload(decode=True)
