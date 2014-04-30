@@ -240,8 +240,11 @@ class Message():
 
 class Attachment:
     def __init__(self, attachment):
-        dh = decode_header(attachment.get_filename())
-        self.name = ''.join([try_parse(t[0], t[1]) for t in dh])
+        try:
+            dh = decode_header(attachment.get_filename())
+            self.name = ''.join([try_parse(t[0], t[1]) for t in dh])
+        except UnicodeEncodeError:
+            self.name = attachment.get_filename()
 
         # Raw file data
         if isinstance(attachment.get_payload(), basestring):
