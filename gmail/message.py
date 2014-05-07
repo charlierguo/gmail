@@ -4,15 +4,15 @@ import re
 import time
 import os
 
-from email.header import decode_header
+from email.header import decode_header, HeaderParseError
 from imaplib import ParseFlags
 
 
 def try_parse(header, encoding="ASCII"):
     """
-    Try to decode specified header using specified encoding.
+    Try to parse specified header using specified encoding.
     On failure to do so, use ISO-8859-1, and then UTF-8.
-    Header and encoding are most often return from decode_header.
+    Header and encoding are most often return from decode_header (but use try_decode instead of decode_header, see below).
     """
     if encoding is None:
         encoding = 'ASCII'
@@ -24,6 +24,21 @@ def try_parse(header, encoding="ASCII"):
             return unicode(header, 'ISO-8859-1')
         except UnicodeDecodeError:
             return unicode(header, 'UTF-8')
+
+
+def try_decode(header):
+    """
+    Try to decode specified header,
+    We need to wrap this in a try / except for the very rare case of FUCKED UP clients
+    using FUCKING non-standard base63 encoding. Wow. Such smart. Fucking faglords.
+    Please phpmailer.codeworxtech.com fix this shit or i'll fucking kill your family and set your house on fire.
+    See http://bugs.python.org/issue12489
+    """
+
+    try:
+        return decode_header(header)
+    except HeaderParseError:
+        return [[header, None]]
 
 
 class Message():
@@ -148,7 +163,7 @@ class Message():
             return list()
 
     def parse_header(self, encoded_header):
-        dh = decode_header(encoded_header)
+        dh = try_decode(encoded_header)
         return ''.join([try_parse(t[0], t[1]) for t in dh])
 
     def parse(self, raw_message):
@@ -241,7 +256,7 @@ class Message():
 class Attachment:
     def __init__(self, attachment):
         try:
-            dh = decode_header(attachment.get_filename())
+            dh = try_decode(attachment.get_filename())
             self.name = ''.join([try_parse(t[0], t[1]) for t in dh])
         except UnicodeEncodeError:
             self.name = attachment.get_filename()
