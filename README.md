@@ -126,12 +126,13 @@ Download message attachments:
         attachment.save('attachments/' + attachment.name)
     
 There is also few shortcuts to mark messages quickly:
-
+    ```python
     email.read()
     email.unread()
     email.spam()
     email.star()
     email.unstar()
+    ```
 
 ### Roadmap
 * Write tests
