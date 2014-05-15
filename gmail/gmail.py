@@ -1,6 +1,4 @@
-import re
-import imaplib
-
+import re,imaplib
 from mailbox import Mailbox
 from utf import encode as encode_utf7, decode as decode_utf7
 from exceptions import *
@@ -9,7 +7,6 @@ class Gmail():
     # GMail IMAP defaults
     GMAIL_IMAP_HOST = 'imap.gmail.com'
     GMAIL_IMAP_PORT = 993
-
     # GMail SMTP defaults
     # TODO: implement SMTP functions
     GMAIL_SMTP_HOST = "smtp.gmail.com"
@@ -19,25 +16,21 @@ class Gmail():
         self.username = None
         self.password = None
         self.access_token = None
-
         self.imap = None
         self.smtp = None
         self.logged_in = False
         self.mailboxes = {}
         self.current_mailbox = None
-
-
-        # self.connect()
-
-
+        
     def connect(self, raise_errors=True):
-        # try:
-        #     self.imap = imaplib.IMAP4_SSL(self.GMAIL_IMAP_HOST, self.GMAIL_IMAP_PORT)
-        # except socket.error:
-        #     if raise_errors:
-        #         raise Exception('Connection failure.')
-        #     self.imap = None
-
+        """
+         try:
+             self.imap = imaplib.IMAP4_SSL(self.GMAIL_IMAP_HOST, self.GMAIL_IMAP_PORT)
+         except socket.error:
+             if raise_errors:
+                 raise Exception('Connection failure.')
+             self.imap = None
+        """
         self.imap = imaplib.IMAP4_SSL(self.GMAIL_IMAP_HOST, self.GMAIL_IMAP_PORT)
 
         # self.smtp = smtplib.SMTP(self.server,self.port)
@@ -50,6 +43,9 @@ class Gmail():
 
 
     def fetch_mailboxes(self):
+        """
+        Get mailbox from gmail
+        """
         response, mailbox_list = self.imap.list()
         if response == 'OK':
             for mailbox in mailbox_list:
@@ -91,12 +87,14 @@ class Gmail():
 
 
     def login(self, username, password):
+        """
+        Login to gmail server with users credentials 
+        """
         self.username = username
         self.password = password
 
         if not self.imap:
             self.connect()
-
         try:
             imap_login = self.imap.login(self.username, self.password)
             self.logged_in = (imap_login and imap_login[0] == 'OK')
@@ -104,19 +102,14 @@ class Gmail():
                 self.fetch_mailboxes()
         except imaplib.IMAP4.error:
             raise AuthenticationError
-
-
         # smtp_login(username, password)
-
         return self.logged_in
 
     def authenticate(self, username, access_token):
         self.username = username
         self.access_token = access_token
-
         if not self.imap:
             self.connect()
-
         try:
             auth_string = 'user=%s\1auth=Bearer %s\1\1' % (username, access_token)
             imap_auth = self.imap.authenticate('XOAUTH2', lambda x: auth_string)
@@ -125,13 +118,11 @@ class Gmail():
                 self.fetch_mailboxes()
         except imaplib.IMAP4.error:
             raise AuthenticationError
-
         return self.logged_in
 
     def logout(self):
         self.imap.logout()
         self.logged_in = False
-
 
     def label(self, label_name):
         return self.mailbox(label_name)
@@ -140,7 +131,6 @@ class Gmail():
         box = self.mailbox(mailbox_name)
         return box.mail(**kwargs)
 
-    
     def copy(self, uid, to_mailbox, from_mailbox=None):
         if from_mailbox:
             self.use_mailbox(from_mailbox)
@@ -154,9 +144,7 @@ class Gmail():
             if re.search(r'UID (\d+)', raw_message[0]):
                 uid = re.search(r'UID (\d+)', raw_message[0]).groups(1)[0]
                 messages[uid].parse(raw_message)
-
         return messages
-
 
     def labels(self, require_unicode=False):
         keys = self.mailboxes.keys()
