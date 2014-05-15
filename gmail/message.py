@@ -1,14 +1,9 @@
-import datetime
-import email
-import re
-import time
-import os
+import datetime,email,re,time,os
 from email.header import decode_header, make_header
 from imaplib import ParseFlags
 
 class Message():
-
-
+    
     def __init__(self, mailbox, uid):
         self.uid = uid
         self.mailbox = mailbox
