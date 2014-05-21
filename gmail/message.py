@@ -190,8 +190,10 @@ class Message():
                 elif content.get_content_type() == "text/html":
                     self.html = to_unicode(content.get_payload(decode=True), content.get_content_charset())
         elif self.message.get_content_maintype() == "text":
-            self.body = to_unicode(self.message.get_payload(decode=True), self.message.get_content_charset())
-
+            if self.message.get_content_type() == "text/plain":
+                self.body = to_unicode(self.message.get_payload(decode=True), self.message.get_content_charset())
+            elif self.message.get_content_type() == "text/html":
+                self.html = to_unicode(self.message.get_payload(decode=True), self.message.get_content_charset())
         try:
             self.sent_at = datetime.datetime.fromtimestamp(time.mktime(email.utils.parsedate_tz(self.message['date'])[:9]))
         except:
