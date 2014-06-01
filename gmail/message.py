@@ -172,11 +172,6 @@ class Message():
 
         self.message = email.message_from_string(raw_email)
 
-        def to_unicode(value, charset):
-            r = try_parse(value, charset)
-
-            return r
-
         self.headers = self.parse_headers(self.message)
 
         self.to = self.parse_header(self.message['to'])
@@ -186,14 +181,14 @@ class Message():
         if self.message.get_content_maintype() == "multipart":
             for content in self.message.walk():
                 if content.get_content_type() == "text/plain":
-                    self.body = to_unicode(content.get_payload(decode=True), content.get_content_charset())
+                    self.body = try_parse(content.get_payload(decode=True), content.get_content_charset())
                 elif content.get_content_type() == "text/html":
-                    self.html = to_unicode(content.get_payload(decode=True), content.get_content_charset())
+                    self.html = try_parse(content.get_payload(decode=True), content.get_content_charset())
         elif self.message.get_content_maintype() == "text":
             if self.message.get_content_type() == "text/plain":
-                self.body = to_unicode(self.message.get_payload(decode=True), self.message.get_content_charset())
+                self.body = try_parse(self.message.get_payload(decode=True), self.message.get_content_charset())
             elif self.message.get_content_type() == "text/html":
-                self.html = to_unicode(self.message.get_payload(decode=True), self.message.get_content_charset())
+                self.html = try_parse(self.message.get_payload(decode=True), self.message.get_content_charset())
         try:
             self.sent_at = datetime.datetime.fromtimestamp(time.mktime(email.utils.parsedate_tz(self.message['date'])[:9]))
         except:
