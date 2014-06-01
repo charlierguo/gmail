@@ -5,6 +5,7 @@ from mailbox import Mailbox
 from utf import encode as encode_utf7, decode as decode_utf7
 from exceptions import *
 
+
 class Gmail():
     # GMail IMAP defaults
     GMAIL_IMAP_HOST = 'imap.gmail.com'
@@ -26,9 +27,7 @@ class Gmail():
         self.mailboxes = {}
         self.current_mailbox = None
 
-
         # self.connect()
-
 
     def connect(self, raise_errors=True):
         # try:
@@ -48,14 +47,15 @@ class Gmail():
 
         return self.imap
 
-
     def fetch_mailboxes(self):
         response, mailbox_list = self.imap.list()
         if response == 'OK':
             for mailbox in mailbox_list:
                 mailbox_name = mailbox.split('"/"')[-1].replace('"', '').strip()
+                mailbox_attrs = mailbox.split('"/"')[0]
                 mailbox = Mailbox(self)
                 mailbox.external_name = mailbox_name
+                mailbox.attrs = mailbox_attrs
                 self.mailboxes[mailbox_name] = mailbox
 
     def use_mailbox(self, mailbox):
@@ -88,8 +88,6 @@ class Gmail():
             self.imap.delete(mailbox_name)
             del self.mailboxes[mailbox_name]
 
-
-
     def login(self, username, password):
         self.username = username
         self.password = password
@@ -104,7 +102,6 @@ class Gmail():
                 self.fetch_mailboxes()
         except imaplib.IMAP4.error:
             raise AuthenticationError
-
 
         # smtp_login(username, password)
 
@@ -132,7 +129,6 @@ class Gmail():
         self.imap.logout()
         self.logged_in = False
 
-
     def label(self, label_name):
         return self.mailbox(label_name)
 
@@ -140,14 +136,13 @@ class Gmail():
         box = self.mailbox(mailbox_name)
         return box.mail(**kwargs)
 
-    
     def copy(self, uid, to_mailbox, from_mailbox=None):
         if from_mailbox:
             self.use_mailbox(from_mailbox)
         self.imap.uid('COPY', uid, to_mailbox)
 
     def fetch_multiple_messages(self, messages):
-        fetch_str =  ','.join(messages.keys())
+        fetch_str = ','.join(messages.keys())
         response, results = self.imap.uid('FETCH', fetch_str, '(BODY.PEEK[] FLAGS X-GM-THRID X-GM-MSGID X-GM-LABELS)')
         for index in xrange(len(results) - 1):
             raw_message = results[index]
@@ -156,7 +151,6 @@ class Gmail():
                 messages[uid].parse(raw_message)
 
         return messages
-
 
     def labels(self, require_unicode=False):
         keys = self.mailboxes.keys()
