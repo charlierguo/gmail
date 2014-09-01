@@ -113,7 +113,7 @@ class Message():
 
     def parse_headers(self, message):
         hdrs = {}
-        for hdr in message.keys():
+        for hdr in list(message.keys()):
             hdrs[hdr] = message[hdr]
         return hdrs
 
@@ -122,22 +122,22 @@ class Message():
         # flags = re.search(r'FLAGS \(([^\)]*)\)', headers).groups(1)[0].split(' ')
 
     def parse_labels(self, headers):
+        headers = headers.decode()
         if re.search(r'X-GM-LABELS \(([^\)]+)\)', headers):
             labels = re.search(r'X-GM-LABELS \(([^\)]+)\)', headers).groups(1)[0].split(' ')
-            return map(lambda l: l.replace('"', '').decode("string_escape"), labels)
+            return [l.replace('"', '').decode("string_escape") for l in labels]
         else:
             return list()
 
     def parse_subject(self, encoded_subject):
         dh = decode_header(encoded_subject)
-        default_charset = 'ASCII'
-        return ''.join([ unicode(t[0], t[1] or default_charset) for t in dh ])
+        return ''.join(t[0] for t in dh)
 
     def parse(self, raw_message):
         raw_headers = raw_message[0]
         raw_email = raw_message[1]
 
-        self.message = email.message_from_string(raw_email)
+        self.message = email.message_from_string(raw_email.decode())
         self.headers = self.parse_headers(self.message)
 
         self.to = self.message['to']
@@ -170,7 +170,7 @@ class Message():
         # Parse attachments into attachment objects array for this message
         self.attachments = [
             Attachment(attachment) for attachment in self.message._payload
-                if not isinstance(attachment, basestring) and attachment.get('Content-Disposition') is not None
+                if not isinstance(attachment, str) and attachment.get('Content-Disposition') is not None
         ]
         
 
@@ -210,7 +210,7 @@ class Message():
         self.gmail.use_mailbox(original_mailbox.name)
 
         # combine and sort sent and received messages
-        return sorted(dict(received_messages.items() + sent_messages.items()).values(), key=lambda m: m.sent_at)
+        return sorted(list(dict(list(received_messages.items()) + list(sent_messages.items())).values()), key=lambda m: m.sent_at)
 
 
 class Attachment:
