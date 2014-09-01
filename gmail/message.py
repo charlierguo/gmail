@@ -122,10 +122,9 @@ class Message():
         # flags = re.search(r'FLAGS \(([^\)]*)\)', headers).groups(1)[0].split(' ')
 
     def parse_labels(self, headers):
-        headers = headers.decode()
         if re.search(r'X-GM-LABELS \(([^\)]+)\)', headers):
             labels = re.search(r'X-GM-LABELS \(([^\)]+)\)', headers).groups(1)[0].split(' ')
-            return [l.replace('"', '').decode("string_escape") for l in labels]
+            return [l.replace('"', '').encode().decode("unicode_escape") for l in labels]
         else:
             return list()
 
@@ -134,7 +133,7 @@ class Message():
         return ''.join(t[0] for t in dh)
 
     def parse(self, raw_message):
-        raw_headers = raw_message[0]
+        raw_headers = raw_message[0].decode()
         raw_email = raw_message[1]
 
         self.message = email.message_from_string(raw_email.decode())
@@ -157,7 +156,7 @@ class Message():
 
         self.sent_at = datetime.datetime.fromtimestamp(time.mktime(email.utils.parsedate_tz(self.message['date'])[:9]))
 
-        self.flags = self.parse_flags(raw_headers)
+        self.flags = self.parse_flags(raw_headers.encode())
 
         self.labels = self.parse_labels(raw_headers)
 
