@@ -216,7 +216,7 @@ class Message():
 class Attachment:
 
     def __init__(self, attachment):
-        self.name = attachment.get_filename()
+        self.name = decode_header(attachment.get_filename())[0][0]
         # Raw file data
         self.payload = attachment.get_payload(decode=True)
         # Filesize in kilobytes
