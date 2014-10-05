@@ -21,6 +21,9 @@ class Message():
         self.body = None
         self.html = None
 
+        self.partitioned_body = []
+        self.partitioned_html = []
+
         self.to = None
         self.fr = None
         self.cc = None
@@ -146,14 +149,38 @@ class Message():
 
         self.subject = self.parse_subject(self.message['subject'])
 
-        if self.message.get_content_maintype() == "multipart":
-            for content in self.message.walk():
-                if content.get_content_type() == "text/plain":
-                    self.body = content.get_payload(decode=True)
-                elif content.get_content_type() == "text/html":
-                    self.html = content.get_payload(decode=True)
+        if self.message.is_multipart():
+
+            for part in self.message.walk():
+
+                # since we're already walking the tree, we only 
+                # care about leaf nodes; ignore everything else
+                if not part.is_multipart():
+
+                    content_disposition = part.get('Content-Disposition', None)
+                    if content_disposition:
+                        # if it has a content disposition, it should
+                        # be an attachment of some kind 
+                        self.attachments.append(Attachment(part))
+                    else:
+                        content = part.get_payload(decode=True)
+                        content_type = part.get_content_type()
+                        if content_type == "text/plain":
+                            self.partioned_body.append(content)
+                        elif content_type == "text/html":
+                            self.partioned_html.append(content)
+
         elif self.message.get_content_maintype() == "text":
             self.body = self.message.get_payload()
+
+        # This determines what the body and html of the
+        # email appears to be to our client. Because of 
+        # multipart content, there can be multiple values
+        # for each; here we take the longest value, which 
+        # serves to drop the empty HTML that gets created
+        # with attachments
+        self.body = max(self.partioned_body)
+        self.html = max(self.partioned_html)
 
         self.sent_at = datetime.datetime.fromtimestamp(time.mktime(email.utils.parsedate_tz(self.message['date'])[:9]))
 
@@ -165,14 +192,7 @@ class Message():
             self.thread_id = re.search(r'X-GM-THRID (\d+)', raw_headers).groups(1)[0]
         if re.search(r'X-GM-MSGID (\d+)', raw_headers):
             self.message_id = re.search(r'X-GM-MSGID (\d+)', raw_headers).groups(1)[0]
-
-        
-        # Parse attachments into attachment objects array for this message
-        self.attachments = [
-            Attachment(attachment) for attachment in self.message._payload
-                if not isinstance(attachment, basestring) and attachment.get('Content-Disposition') is not None
-        ]
-        
+    
 
     def fetch(self):
         if not self.message:
