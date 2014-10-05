@@ -170,18 +170,18 @@ class Message():
                         elif content_type == "text/html":
                             self.partioned_html.append(content)
 
+            # This determines what the body and html of the
+            # email appears to be to our client. Because of 
+            # multipart content, there can be multiple values
+            # for each; here we take the longest value, which 
+            # serves to drop the empty HTML that gets created
+            # with attachments
+            self.body = max(self.partioned_body)
+            self.html = max(self.partioned_html)
+
         elif self.message.get_content_maintype() == "text":
             self.body = self.message.get_payload()
-
-        # This determines what the body and html of the
-        # email appears to be to our client. Because of 
-        # multipart content, there can be multiple values
-        # for each; here we take the longest value, which 
-        # serves to drop the empty HTML that gets created
-        # with attachments
-        self.body = max(self.partioned_body)
-        self.html = max(self.partioned_html)
-
+        
         self.sent_at = datetime.datetime.fromtimestamp(time.mktime(email.utils.parsedate_tz(self.message['date'])[:9]))
 
         self.flags = self.parse_flags(raw_headers)
