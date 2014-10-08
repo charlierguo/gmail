@@ -5,6 +5,7 @@ import time
 import os
 from email.header import decode_header, make_header
 from imaplib import ParseFlags
+from utils import longest
 
 class Message():
 
@@ -176,8 +177,8 @@ class Message():
             # for each; here we take the longest value, which 
             # serves to drop the empty HTML that gets created
             # with attachments
-            self.body = max(self.partitioned_body)
-            self.html = max(self.partitioned_html)
+            self.body = longest(self.partitioned_body)
+            self.html = longest(self.partitioned_html)
 
         elif self.message.get_content_maintype() == "text":
             self.body = self.message.get_payload()
@@ -192,13 +193,6 @@ class Message():
             self.thread_id = re.search(r'X-GM-THRID (\d+)', raw_headers).groups(1)[0]
         if re.search(r'X-GM-MSGID (\d+)', raw_headers):
             self.message_id = re.search(r'X-GM-MSGID (\d+)', raw_headers).groups(1)[0]
-
-        
-        # Parse attachments into attachment objects array for this message
-        self.attachments = [
-            Attachment(attachment) for attachment in self.message._payload
-                if not isinstance(attachment, basestring) and attachment.get('Content-Disposition') is not None
-        ]
         
 
     def fetch(self):
@@ -259,3 +253,6 @@ class Attachment:
 
         with open(path, 'wb') as f:
             f.write(self.payload)
+
+
+

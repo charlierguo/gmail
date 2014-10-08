@@ -1,13 +1,7 @@
 
 
-from .gmail import Gmail 
-
-def login(username, password):
-    gmail = Gmail()
-    gmail.login(username, password)
-    return gmail
-
-def authenticate(username, access_token):
-    gmail = Gmail()
-    gmail.authenticate(username, access_token)
-    return gmail
+def longest(iter1, iter2):
+    if len(iter1) > len(iter2):
+        return iter1
+    else:
+        return iter2
