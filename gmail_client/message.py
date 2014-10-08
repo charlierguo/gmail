@@ -5,7 +5,6 @@ import time
 import os
 from email.header import decode_header, make_header
 from imaplib import ParseFlags
-from utils import longest
 
 class Message():
 
