@@ -39,7 +39,7 @@ class Message():
         self.thread = []
         self.message_id = None
  
-        self.attachments = None
+        self.attachments = []
         
 
 
@@ -177,8 +177,8 @@ class Message():
             # for each; here we take the longest value, which 
             # serves to drop the empty HTML that gets created
             # with attachments
-            self.body = longest(self.partitioned_body)
-            self.html = longest(self.partitioned_html)
+            self.body = sorted(self.partitioned_body, key=len, reverse=True)[0]
+            self.html = sorted(self.partitioned_html, key=len, reverse=True)[0]
 
         elif self.message.get_content_maintype() == "text":
             self.body = self.message.get_payload()
