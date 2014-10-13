@@ -167,25 +167,14 @@ from .message import Message, Attachment
 from .exceptions import GmailException, ConnectionError, AuthenticationError
 
 
-# Utility methods for people to use
+# utility methods for people to use
 
 def login(username, password):
-    """
-    .. py:function:: login(sequence[, start=0])
-    Login
-
-    """
     gmail = Gmail()
     gmail.login(username, password)
     return gmail
 
 def authenticate(username, access_token):
-    """
-
-    :param username:
-    :param access_token:
-    :return:
-    """
     gmail = Gmail()
     gmail.authenticate(username, access_token)
     return gmail

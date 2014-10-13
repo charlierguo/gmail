@@ -8,7 +8,6 @@ Welcome to Gmail Client's documentation!
 
 .. toctree::
    :maxdepth: 2
-
 .. automodule:: gmail_client
 .. autoclass:: Gmail
     :members:
