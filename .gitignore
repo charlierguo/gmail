@@ -25,3 +25,4 @@ spec/account.yml
 build/
 dist/
 gmail_client.egg-info/
+docs/build

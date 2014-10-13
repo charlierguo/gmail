@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
 """
-gmail.exceptions
-~~~~~~~~~~~~~~~~~~~
 
 This module contains the set of Gmail's exceptions.
 
@@ -11,8 +9,9 @@ This module contains the set of Gmail's exceptions.
 
 class GmailException(RuntimeError):
     """
-    There was an ambiguous exception that occurred
-    while handling your request.
+    The base exception in the library. Also raised when there
+    was an ambiguous exception that occurred while handling a
+    request.
 
     """
 
