@@ -3,7 +3,7 @@ import email
 import re
 import time
 import os
-from email.header import decode_header, make_header
+from email.header import decode_header
 from imaplib import ParseFlags
 
 class Message():
@@ -21,6 +21,9 @@ class Message():
         self.body = None
         self.html = None
 
+        self.partitioned_body = []
+        self.partitioned_html = []
+
         self.to = None
         self.fr = None
         self.cc = None
@@ -35,7 +38,7 @@ class Message():
         self.thread = []
         self.message_id = None
  
-        self.attachments = None
+        self.attachments = []
         
 
 
@@ -60,7 +63,7 @@ class Message():
         self.gmail.imap.uid('STORE', self.uid, '+FLAGS', flag)
         if flag not in self.flags: self.flags.append(flag)
 
-    def unstar(self):
+    def un_star(self):
         flag = '\\Flagged'
         self.gmail.imap.uid('STORE', self.uid, '-FLAGS', flag)
         if flag in self.flags: self.flags.remove(flag)
@@ -94,12 +97,6 @@ class Message():
         trash = '[Gmail]/Trash' if '[Gmail]/Trash' in self.gmail.labels() else '[Gmail]/Bin'
         if self.mailbox.name not in ['[Gmail]/Bin', '[Gmail]/Trash']:
             self.move_to(trash)
-
-    # def undelete(self):
-    #     flag = '\\Deleted'
-    #     self.gmail.imap.uid('STORE', self.uid, '-FLAGS', flag)
-    #     if flag in self.flags: self.flags.remove(flag)
-
 
     def move_to(self, name):
         self.gmail.copy(self.uid, name, self.mailbox.name)
@@ -146,12 +143,36 @@ class Message():
 
         self.subject = self.parse_subject(self.message['subject'])
 
-        if self.message.get_content_maintype() == "multipart":
-            for content in self.message.walk():
-                if content.get_content_type() == "text/plain":
-                    self.body = content.get_payload(decode=True)
-                elif content.get_content_type() == "text/html":
-                    self.html = content.get_payload(decode=True)
+        if self.message.is_multipart():
+
+            for part in self.message.walk():
+
+                # since we're already walking the tree, we only 
+                # care about leaf nodes; ignore everything else
+                if not part.is_multipart():
+
+                    content_disposition = part.get('Content-Disposition', None)
+                    if content_disposition:
+                        # if it has a content disposition, it should
+                        # be an attachment of some kind 
+                        self.attachments.append(Attachment(part))
+                    else:
+                        content = part.get_payload(decode=True)
+                        content_type = part.get_content_type()
+                        if content_type == "text/plain":
+                            self.partitioned_body.append(content)
+                        elif content_type == "text/html":
+                            self.partitioned_html.append(content)
+
+            # This determines what the body and html of the
+            # email appears to be to our client. Because of 
+            # multipart content, there can be multiple values
+            # for each; here we take the longest value, which 
+            # serves to drop the empty HTML that gets created
+            # with attachments
+            self.body = sorted(self.partitioned_body, key=len, reverse=True)[0]
+            self.html = sorted(self.partitioned_html, key=len, reverse=True)[0]
+
         elif self.message.get_content_maintype() == "text":
             self.body = self.message.get_payload()
 
@@ -165,13 +186,6 @@ class Message():
             self.thread_id = re.search(r'X-GM-THRID (\d+)', raw_headers).groups(1)[0]
         if re.search(r'X-GM-MSGID (\d+)', raw_headers):
             self.message_id = re.search(r'X-GM-MSGID (\d+)', raw_headers).groups(1)[0]
-
-        
-        # Parse attachments into attachment objects array for this message
-        self.attachments = [
-            Attachment(attachment) for attachment in self.message._payload
-                if not isinstance(attachment, basestring) and attachment.get('Content-Disposition') is not None
-        ]
         
 
     def fetch(self):
@@ -216,9 +230,11 @@ class Message():
 class Attachment:
 
     def __init__(self, attachment):
-        self.name = attachment.get_filename()
+        self.name = decode_header(attachment.get_filename())[0][0]
+
         # Raw file data
         self.payload = attachment.get_payload(decode=True)
+
         # Filesize in kilobytes
         self.size = int(round(len(self.payload)/1000.0))
 
@@ -232,3 +248,6 @@ class Attachment:
 
         with open(path, 'wb') as f:
             f.write(self.payload)
+
+
+

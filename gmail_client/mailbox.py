@@ -3,6 +3,10 @@ from utf import encode as encode_utf7, decode as decode_utf7
 
 
 class Mailbox():
+    """
+    A Mailbox object.
+
+    """
 
     def __init__(self, gmail, name="INBOX"):
         self.name = name
