@@ -3,7 +3,7 @@ import email
 import re
 import time
 import os
-from email.header import decode_header, make_header
+from email.header import decode_header
 from imaplib import ParseFlags
 
 class Message():
@@ -63,7 +63,7 @@ class Message():
         self.gmail.imap.uid('STORE', self.uid, '+FLAGS', flag)
         if flag not in self.flags: self.flags.append(flag)
 
-    def unstar(self):
+    def un_star(self):
         flag = '\\Flagged'
         self.gmail.imap.uid('STORE', self.uid, '-FLAGS', flag)
         if flag in self.flags: self.flags.remove(flag)
@@ -97,12 +97,6 @@ class Message():
         trash = '[Gmail]/Trash' if '[Gmail]/Trash' in self.gmail.labels() else '[Gmail]/Bin'
         if self.mailbox.name not in ['[Gmail]/Bin', '[Gmail]/Trash']:
             self.move_to(trash)
-
-    # def undelete(self):
-    #     flag = '\\Deleted'
-    #     self.gmail.imap.uid('STORE', self.uid, '-FLAGS', flag)
-    #     if flag in self.flags: self.flags.remove(flag)
-
 
     def move_to(self, name):
         self.gmail.copy(self.uid, name, self.mailbox.name)
@@ -237,8 +231,10 @@ class Attachment:
 
     def __init__(self, attachment):
         self.name = decode_header(attachment.get_filename())[0][0]
+
         # Raw file data
         self.payload = attachment.get_payload(decode=True)
+
         # Filesize in kilobytes
         self.size = int(round(len(self.payload)/1000.0))
 
