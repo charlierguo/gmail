@@ -34,9 +34,9 @@ class Message():
         self.thread_id = None
         self.thread = []
         self.message_id = None
- 
+
         self.attachments = None
-        
+
 
 
     def is_read(self):
@@ -131,7 +131,7 @@ class Message():
     def parse_subject(self, encoded_subject):
         dh = decode_header(encoded_subject)
         default_charset = 'ASCII'
-        return ''.join([ unicode(t[0], t[1] or default_charset) for t in dh ])
+        return u''.join([ unicode(t[0], t[1] or default_charset) for t in dh ])
 
     def parse(self, raw_message):
         raw_headers = raw_message[0]
@@ -166,13 +166,13 @@ class Message():
         if re.search(r'X-GM-MSGID (\d+)', raw_headers):
             self.message_id = re.search(r'X-GM-MSGID (\d+)', raw_headers).groups(1)[0]
 
-        
+
         # Parse attachments into attachment objects array for this message
         self.attachments = [
             Attachment(attachment) for attachment in self.message._payload
                 if not isinstance(attachment, basestring) and attachment.get('Content-Disposition') is not None
         ]
-        
+
 
     def fetch(self):
         if not self.message:
