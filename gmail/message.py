@@ -142,6 +142,7 @@ class Message():
 
         self.to = self.message['to']
         self.fr = self.message['from']
+        self.cc = self.message['cc']
         self.delivered_to = self.message['delivered_to']
 
         self.subject = self.parse_subject(self.message['subject'])
