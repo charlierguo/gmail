@@ -131,7 +131,11 @@ class Message():
     def parse_subject(self, encoded_subject):
         dh = decode_header(encoded_subject)
         default_charset = 'ASCII'
-        return ''.join([ unicode(t[0], t[1] or default_charset) for t in dh ])
+        fallback_encoding = 'UTF8'
+        try:
+            return ''.join([ unicode(t[0], t[1] or default_charset) for t in dh ])
+        except UnicodeDecodeError:
+            return ''.join([ unicode(t[0], t[1] or fallback_encoding) for t in dh ])
 
     def parse(self, raw_message):
         raw_headers = raw_message[0]
