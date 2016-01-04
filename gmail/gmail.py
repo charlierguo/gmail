@@ -1,9 +1,20 @@
 import re
 import imaplib
+import smtplib
 
 from mailbox import Mailbox
 from utf import encode as encode_utf7, decode as decode_utf7
 from exceptions import *
+
+# For SMTP
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.MIMEBase import MIMEBase
+from email import Charset
+from email.header import Header
+from email.generator import Generator
+from email import Encoders
+from os.path import basename
 
 class Gmail():
     # GMail IMAP defaults
@@ -11,7 +22,6 @@ class Gmail():
     GMAIL_IMAP_PORT = 993
 
     # GMail SMTP defaults
-    # TODO: implement SMTP functions
     GMAIL_SMTP_HOST = "smtp.gmail.com"
     GMAIL_SMTP_PORT = 587
 
@@ -26,28 +36,12 @@ class Gmail():
         self.mailboxes = {}
         self.current_mailbox = None
 
-
-        # self.connect()
-
-
     def connect(self, raise_errors=True):
-        # try:
-        #     self.imap = imaplib.IMAP4_SSL(self.GMAIL_IMAP_HOST, self.GMAIL_IMAP_PORT)
-        # except socket.error:
-        #     if raise_errors:
-        #         raise Exception('Connection failure.')
-        #     self.imap = None
-
         self.imap = imaplib.IMAP4_SSL(self.GMAIL_IMAP_HOST, self.GMAIL_IMAP_PORT)
-
-        # self.smtp = smtplib.SMTP(self.server,self.port)
+        self.smtp = smtplib.SMTP(self.GMAIL_SMTP_HOST, self.GMAIL_SMTP_PORT)
         # self.smtp.set_debuglevel(self.debug)
-        # self.smtp.ehlo()
-        # self.smtp.starttls()
-        # self.smtp.ehlo()
-
-        return self.imap
-
+        self.smtp.ehlo()
+        self.smtp.starttls()
 
     def fetch_mailboxes(self):
         response, mailbox_list = self.imap.list()
@@ -88,8 +82,6 @@ class Gmail():
             self.imap.delete(mailbox_name)
             del self.mailboxes[mailbox_name]
 
-
-
     def login(self, username, password):
         self.username = username
         self.password = password
@@ -99,14 +91,13 @@ class Gmail():
 
         try:
             imap_login = self.imap.login(self.username, self.password)
-            self.logged_in = (imap_login and imap_login[0] == 'OK')
+            smtp_login = self.smtp.login(self.username, self.password)
+
+            self.logged_in = (imap_login and imap_login[0] == 'OK' and smtp_login)
             if self.logged_in:
                 self.fetch_mailboxes()
-        except imaplib.IMAP4.error:
+        except:
             raise AuthenticationError
-
-
-        # smtp_login(username, password)
 
         return self.logged_in
 
@@ -130,8 +121,8 @@ class Gmail():
 
     def logout(self):
         self.imap.logout()
+        self.smtp.close()
         self.logged_in = False
-
 
     def label(self, label_name):
         return self.mailbox(label_name)
@@ -139,7 +130,6 @@ class Gmail():
     def find(self, mailbox_name="[Gmail]/All Mail", **kwargs):
         box = self.mailbox(mailbox_name)
         return box.mail(**kwargs)
-
     
     def copy(self, uid, to_mailbox, from_mailbox=None):
         if from_mailbox:
@@ -156,7 +146,6 @@ class Gmail():
                 messages[uid].parse(raw_message)
 
         return messages
-
 
     def labels(self, require_unicode=False):
         keys = self.mailboxes.keys()
@@ -184,3 +173,51 @@ class Gmail():
 
     def mail_domain(self):
         return self.username.split('@')[-1]
+
+    def noop(self):
+        return self.imap.noop()
+
+    def add_files(self, message, attachment):
+        for filename in attachment:
+            try:
+                file_handle = open(filename, "rb")
+            except:
+                file_handle = None
+
+            if file_handle == None:
+				continue
+
+            content = file_handle.read()
+            attach_part = MIMEBase('application', 'octet-stream')
+            attach_part.set_payload(content)
+            Encoders.encode_base64(attach_part)
+            attach_part.add_header('Content-Disposition',
+                'attachment; filename="%s"' % basename(filename))
+
+            message.attach(attach_part)
+            file_handle.close()
+
+    def send_mail(self, recipient, subject, body, attachment):
+        recipient = recipient if type(recipient) is list else [recipient]
+        attachment = attachment if type(attachment) is list else [attachment]
+
+        # For unicode message
+        message = MIMEMultipart('alternative')
+        message['Subject'] = "%s" % Header(subject, 'utf-8')
+        message['From'] = "%s" % (Header(self.username, 'utf-8'))
+
+        recipient_string = ""
+        for name in recipient:
+            recipient_string = recipient_string + name + ","
+        # Cut the last comma
+        recipient_string = recipient_string[0: len(recipient_string) - 1]
+
+        message['To'] = "%s" % (Header(recipient_string, 'utf-8'))
+        message.add_header('reply-to', "%s" % (Header(self.username, 'utf-8')))
+
+        # Attach text and attachment parts
+        text_part = MIMEText(body, 'plain', 'UTF-8')
+        message.attach(text_part)
+        self.add_files(message, attachment)
+
+        self.smtp.sendmail(self.username, recipient, message.as_string())
