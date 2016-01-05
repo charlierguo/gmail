@@ -133,6 +133,10 @@ There is also few shortcuts to mark messages quickly:
     email.star()
     email.unstar()
 
+You can send emails to multiple persons:
+
+    g.send_mail("myfriend.com", subject, body, attachments)
+
 ### Roadmap
 * Write tests
 * Better label support
