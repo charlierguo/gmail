@@ -21,3 +21,6 @@ class AuthenticationError(GmailException):
 
 class Timeout(GmailException):
     """The request timed out."""
+
+class MessageFormatError(GmailException):
+	"""Improper message format"""
