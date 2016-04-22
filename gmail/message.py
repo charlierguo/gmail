@@ -5,6 +5,8 @@ import time
 import os
 from email.header import decode_header, make_header
 from imaplib import ParseFlags
+from email.utils import formatdate, make_msgid
+from email.mime.text import MIMEText
 
 class Message():
 
@@ -26,6 +28,9 @@ class Message():
         self.cc = None
         self.delivered_to = None
 
+        #to_addrs variable for sending mail
+        self.to_addrs = []
+        
         self.sent_at = None
 
         self.flags = []
@@ -37,6 +42,9 @@ class Message():
  
         self.attachments = None
         
+        #Message options and recepient options
+        self.msg_options = []
+        self.rcpt_options = []
 
 
     def is_read(self):
@@ -212,7 +220,48 @@ class Message():
         # combine and sort sent and received messages
         return sorted(dict(received_messages.items() + sent_messages.items()).values(), key=lambda m: m.sent_at)
 
+    def send(self):
+        if not self.gmail.logged_in:
+            self.gmail.login(self.username, self.password)
+        if self.fr is None:
+            self.fr = self.username
+        if self.message_id is None:
+            self.message_id = make_msgid()
+        if self.to is None:
+            raise MessageFormatError("To: field is not defined")
+        
+        self.sent_at = formatdate(time.time(),localtime=True)
+        self.to_addrs = self.to
+        if self.cc is not None:
+			self.to_addrs = self.to_addrs + ", " + self.cc
+        self.create_message()
+        print "sending message\n\n%s" %self.message.as_string()
+        self.gmail.smtp.sendmail(self.fr, self.to_addrs, self.message.as_string(), self.msg_options, self.rcpt_options)        
 
+    def create_message(self):
+        """Can create only text messages as of now"""
+        self.message = MIMEText(self.body)
+        self.message['to'] = self.to_addrs
+        self.message['from'] = self.fr
+        
+        if self.subject is not None:
+            self.message['subject'] = self.subject
+        
+        self.message['date'] = self.sent_at
+            
+    def reply(self, msg_text):
+        new_msg = Message(self.mailbox, self.uid)
+        new_msg.to = self.fr
+        if len(self.to.split(',')) > 1:
+			new_msg.to = new_msg.to + ", " + self.to.split(',')[1:]        
+        new_msg.fr = self.to.split(',')[0]
+        new_msg.cc = self.cc
+        new_msg.subject = self.subject
+        new_msg.body = msg_text
+        #send the message and then return the new message object for further communication
+        new_msg.send()
+        return new_msg
+					
 class Attachment:
 
     def __init__(self, attachment):
