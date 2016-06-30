@@ -10,7 +10,7 @@ def read(fname):
 
 setup(
     name = "gmail",
-    version = "0.0.6",
+    version = "0.0.7",
     author = "Charlie Guo",
     author_email = "FIXME",
     description = ("A Pythonic interface for Google Mail."),
