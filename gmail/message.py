@@ -34,9 +34,9 @@ class Message():
         self.thread_id = None
         self.thread = []
         self.message_id = None
- 
+
         self.attachments = None
-        
+
 
 
     def is_read(self):
@@ -166,13 +166,23 @@ class Message():
         if re.search(r'X-GM-MSGID (\d+)', raw_headers):
             self.message_id = re.search(r'X-GM-MSGID (\d+)', raw_headers).groups(1)[0]
 
-        
+
         # Parse attachments into attachment objects array for this message
-        self.attachments = [
-            Attachment(attachment) for attachment in self.message._payload
-                if not isinstance(attachment, basestring) and attachment.get('Content-Disposition') is not None
-        ]
-        
+        self.attachments = []
+        def make_attachement(attachments):
+            for attachment in attachments:
+                if isinstance(attachment, basestring):
+                    continue
+                if attachment.get_content_type() == 'message/rfc822':
+                    make_attachement(attachment.get_payload())
+                else:
+                    if not attachment.is_multipart():
+                        self.attachments.append(Attachment(attachment))
+                    else:
+                        make_attachement(attachment.get_payload())
+
+        make_attachement(self.message.get_payload())
+
 
     def fetch(self):
         if not self.message:

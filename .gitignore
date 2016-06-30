@@ -21,3 +21,5 @@ tmtags
 
 ## Test Account details
 spec/account.yml
+dist
+*.egg-info
