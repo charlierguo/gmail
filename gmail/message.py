@@ -171,6 +171,8 @@ class Message():
         self.attachments = []
         def make_attachement(attachments):
             for attachment in attachments:
+                if isinstance(attachment, basestring):
+                    continue
                 if attachment.get_content_type() == 'message/rfc822':
                     make_attachement(attachment.get_payload())
                 else:
