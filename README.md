@@ -14,9 +14,12 @@ Heavily inspired by [Kriss "nu7hatch" Kowalik's GMail for Ruby library](https://
 
 ## Installation
 
-For now, installation is manual (`pip` support not yet implemented) and the only requirement is to use Python 2 (2.7+ to be precise):
+For now, installation is manual (`pip` support not yet implemented). Supports python 2/3 and pypy.
+```
 
-    git clone git://github.com/charlierguo/gmail.git
+git clone git://github.com/charlierguo/gmail.git
+
+```
 
 ## Features
 
@@ -134,6 +137,7 @@ There is also few shortcuts to mark messages quickly:
     email.unstar()
 
 ### Roadmap
+* clean the python 3 part ( as it was generated using `2to3` script )
 * Write tests
 * Better label support
 * Moving between labels/mailboxes
