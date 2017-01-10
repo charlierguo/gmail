@@ -11,6 +11,7 @@ Heavily inspired by [Kriss "nu7hatch" Kowalik's GMail for Ruby library](https://
 ## Author
 
 * [Charlie Guo](https://github.com/charlierguo)
+* [Girish Ramnani](https://github.com/girishramnani)
 
 ## Installation
 
@@ -137,11 +138,12 @@ There is also few shortcuts to mark messages quickly:
     email.unstar()
 
 ### Roadmap
-* clean the python 3 part ( as it was generated using `2to3` script )
+
 * Write tests
 * Better label support
 * Moving between labels/mailboxes
 * Intuitive thread fetching & manipulation
+* clean the python 3 part ( as it was generated using `2to3` script )
 * Sending mail via Google's SMTP servers (for now, check out https://github.com/paulchakravarti/gmail-sender)
 
 ## Copyright
