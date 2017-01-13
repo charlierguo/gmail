@@ -56,6 +56,8 @@ class Mailbox():
 
         kwargs.get('query') and search.extend([kwargs.get('query')])
 
+        skip_attachments = kwargs.get('skip_attachments', False)
+
         emails = []
         # print search
         response, data = self.gmail.imap.uid('SEARCH', *search)
@@ -71,7 +73,7 @@ class Mailbox():
                 messages_dict = {}
                 for email in emails:
                     messages_dict[email.uid] = email
-                self.messages.update(self.gmail.fetch_multiple_messages(messages_dict))
+                self.messages.update(self.gmail.fetch_multiple_messages(messages_dict, skip_attachments))
 
         return emails
 

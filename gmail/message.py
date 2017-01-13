@@ -3,12 +3,13 @@ import email
 import re
 import time
 import os
-from email.header import decode_header, make_header
+from email.header import decode_header
 from imaplib import ParseFlags
 
-class Message():
+from exceptions import AttachmentException
 
 
+class Message(object):
     def __init__(self, mailbox, uid):
         self.uid = uid
         self.mailbox = mailbox
@@ -133,7 +134,7 @@ class Message():
         default_charset = 'ASCII'
         return ''.join([ unicode(t[0], t[1] or default_charset) for t in dh ])
 
-    def parse(self, raw_message):
+    def parse(self, raw_message, skip_attachments=False):
         raw_headers = raw_message[0]
         raw_email = raw_message[1]
 
@@ -166,7 +167,9 @@ class Message():
         if re.search(r'X-GM-MSGID (\d+)', raw_headers):
             self.message_id = re.search(r'X-GM-MSGID (\d+)', raw_headers).groups(1)[0]
 
-        
+        if skip_attachments:
+            return
+
         # Parse attachments into attachment objects array for this message
         self.attachments = [
             Attachment(attachment) for attachment in self.message._payload
@@ -203,7 +206,8 @@ class Message():
         sent_messages = {}
         uids = results[0].split(' ')
         if response == 'OK':
-            for uid in uids: sent_messages[uid] = Message(self.gmail.mailboxes['[Gmail]/Sent Mail'], uid)
+            for uid in uids:
+                sent_messages[uid] = Message(self.gmail.mailboxes['[Gmail]/Sent Mail'], uid)
             self.gmail.fetch_multiple_messages(sent_messages)
             self.gmail.mailboxes['[Gmail]/Sent Mail'].messages.update(sent_messages)
 
@@ -219,6 +223,8 @@ class Attachment:
         self.name = attachment.get_filename()
         # Raw file data
         self.payload = attachment.get_payload(decode=True)
+        if not self.payload:
+            raise AttachmentException("Could not parse %s attachment", self.name)
         # Filesize in kilobytes
         self.size = int(round(len(self.payload)/1000.0))
 

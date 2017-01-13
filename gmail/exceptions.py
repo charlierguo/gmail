@@ -21,3 +21,6 @@ class AuthenticationError(GmailException):
 
 class Timeout(GmailException):
     """The request timed out."""
+
+class AttachmentException(GmailException):
+    """Something went wrong with an attachment"""
