@@ -5,6 +5,7 @@ import smtplib
 from .mailbox import Mailbox
 from .utf import encode as encode_utf7, decode as decode_utf7
 from .exceptions import *
+from email.utils import parseaddr
 
 class Gmail():
     # GMail IMAP defaults
@@ -16,7 +17,7 @@ class Gmail():
     GMAIL_SMTP_HOST = "smtp.gmail.com"
     GMAIL_SMTP_PORT = 587
 
-    def __init__(self,debug=False):
+    def __init__(self,debug=True):
         self.username = None
         self.password = None
         self.access_token = None
@@ -102,32 +103,41 @@ class Gmail():
             del self.mailboxes[mailbox_name]
 
 
+    def login_imap(self,username,password):
+
+        if not self.imap:
+            self.connect_imap()
+        imap_login = self.imap.login(self.username, self.password)
+        self.logged_in = (imap_login and imap_login[0] == 'OK')
+        if self.logged_in:
+            self.fetch_mailboxes()
+        return self.logged_in
+        
+
+    def login_smtp(self,username,password):
+        smtp_login = self.smtp.login(username,password)
+        
+
 
     def login(self, username, password,only_fetch=False):
         # by default logins for both IMAP and SMTP connection
 
-        self.username = username
+        self.username = parseaddr(username)[1]
         self.password = password
 
-        if not self.imap:
-            self.connect_imap()
-
         try:
-            imap_login = self.imap.login(self.username, self.password)
-            self.logged_in = (imap_login and imap_login[0] == 'OK')
-            if self.logged_in:
-                self.fetch_mailboxes()
+            self.login_imap(self.username,self.password)            
         except imaplib.IMAP4.error:
             raise AuthenticationError
         
         if not only_fetch:
             self.connect_smtp()
         
-        try :
-            smtp_login = self.smtp.login(self.username,self.password)
-            print(smtp_login)
-        except smtplib.SMTPAuthenticationError:
-            raise AuthenticationError
+            try :
+                self.login_smtp(self.username,self.password)
+                
+            except smtplib.SMTPAuthenticationError:
+                raise AuthenticationError
 
         
 
