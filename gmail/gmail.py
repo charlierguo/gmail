@@ -6,6 +6,7 @@ from .mailbox import Mailbox
 from .utf import encode as encode_utf7, decode as decode_utf7
 from .exceptions import *
 from email.utils import parseaddr
+from smtplib import SMTPResponseException,SMTPServerDisconnected,SMTPAuthenticationError
 
 class Gmail():
     # GMail IMAP defaults
@@ -44,6 +45,27 @@ class Gmail():
         self.imap = imaplib.IMAP4_SSL(self.GMAIL_IMAP_HOST, self.GMAIL_IMAP_PORT)
 
         return self.imap
+
+
+    def is_connected(self):
+        """
+            Check is session connected - initially by checking session instance and
+            then sending NOOP to validate connection
+
+            Sets self.session to None if connection has been closed
+        """
+        if self.smtp is None:
+            return False
+        try:
+            rcode,msg = self.smtp.noop()
+            if rcode == 250:
+                return True
+            else:
+                self.smtp = None
+                return False
+        except (SMTPServerDisconnected,SMTPResponseException):
+            self.smtp = None
+            return False
 
     def connect_smtp(self,raise_errors=True):
 
@@ -114,11 +136,6 @@ class Gmail():
         return self.logged_in
         
 
-    def login_smtp(self,username,password):
-        smtp_login = self.smtp.login(username,password)
-        
-
-
     def login(self, username, password,only_fetch=False):
         # by default logins for both IMAP and SMTP connection
 
@@ -134,14 +151,10 @@ class Gmail():
             self.connect_smtp()
         
             try :
-                self.login_smtp(self.username,self.password)
+                self.smtp.login(self.username,self.password)
                 
-            except smtplib.SMTPAuthenticationError:
+            except SMTPAuthenticationError:
                 raise AuthenticationError
-
-        
-
-        # smtp_login(username, password)
 
         return self.logged_in
 
