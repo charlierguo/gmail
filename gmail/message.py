@@ -68,7 +68,7 @@ class Message():
                 message['Reply-To'] = sender
 
         if message['Date'] is None:
-            message['Date'] = formatdate(time.time(),localtime=True)
+            message['Date'] = formatdate(time.time(), localtime=True)
         if message['Message-ID'] is None:
             message['Message-ID'] = make_msgid()
 
