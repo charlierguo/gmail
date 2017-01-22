@@ -9,7 +9,7 @@ from email.header import decode_header, make_header
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from email.utils import formatdate,make_msgid,getaddresses,parseaddr
+from email.utils import formatdate, make_msgid, getaddresses, parseaddr
 from imaplib import ParseFlags
 from mimetypes import guess_type
 
@@ -20,43 +20,45 @@ else:
 
 
 def charset(s):
-    return  'utf-8' if isinstance(s,unicode_type) else 'us-ascii'
+    return 'utf-8' if isinstance(s, unicode_type) else 'us-ascii'
 
 
 class Message():
 
     @staticmethod
-    def create(subject,to,cc=None,bcc=None,text=None,is_html=False,attachments=None,sender=None,reply_to=None):
+    def create(subject, to, cc=None, bcc=None, text=None, is_html=False, attachments=None, sender=None, reply_to=None):
         """
-        
-        
+
+
 
         returns: MIMEMultipart or MIMEText. Currently as a SMTP message doesnt require any of the methods which 
                  are provided by this message class, this create method doesnt return a Message object.  
         """
         if not is_html and not attachments:
             # Simple plain text email
-            message = MIMEText(text,'plain', charset(text))
+            message = MIMEText(text, 'plain', charset(text))
         else:
             # Multipart message
             message = MIMEMultipart()
             if is_html:
                 # Add html & plain text alernative parts
                 alt = MIMEMultipart('alternative')
-                alt.attach(MIMEText(text,'plain',charset(text)))
-                alt.attach(MIMEText(html,'html',charset(html)))
+                alt.attach(MIMEText(text, 'html', charset(text)))
+                # alt.attach(MIMEText(html,'html',charset(html)))
                 message.attach(alt)
             else:
                 # Just add plain text part
-                txt = MIMEText(text,'plain',charset(text))
+                txt = MIMEText(text, 'plain', charset(text))
                 message.attach(txt)
             # Add attachments
             for a in attachments or []:
                 message.attach(Message._file_to_mime_attachment(a))
         # Set headers
         message['To'] = to
-        if cc: message['Cc'] = cc
-        if bcc: message['Bcc'] = bcc
+        if cc:
+            message['Cc'] = cc
+        if bcc:
+            message['Bcc'] = bcc
 
         if sender:
             message['From'] = sender
@@ -65,20 +67,25 @@ class Message():
                 # If 'Reply-To' is not provided, set it to the 'From' value
                 message['Reply-To'] = sender
 
+        if message['Date'] is None:
+            message['Date'] = formatdate(time.time(),localtime=True)
+        if message['Message-ID'] is None:
+            message['Message-ID'] = make_msgid()
+
         if reply_to:
             message['Reply-To'] = reply_to
 
         message['Subject'] = subject
-        
-        return message
 
+        return message
 
     def __init__(self, mailbox, uid):
         self.uid = uid
         self.mailbox = mailbox
         self.gmail = mailbox.gmail if mailbox else None
 
-        # this is the wrapped object. based on the type this can be a MimeText or MimeMultipart
+        # this is the wrapped object. based on the type this can be a MimeText
+        # or MimeMultipart
         self.message = None
         self.headers = {}
 

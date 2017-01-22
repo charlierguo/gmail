@@ -1,11 +1,11 @@
 import re
 import imaplib
 import smtplib
-
+import itertools
 from .mailbox import Mailbox
 from .utf import encode as encode_utf7, decode as decode_utf7
 from .exceptions import *
-from email.utils import parseaddr
+from email.utils import parseaddr,getaddresses
 from smtplib import SMTPResponseException,SMTPServerDisconnected,SMTPAuthenticationError
 
 class Gmail():
@@ -19,7 +19,7 @@ class Gmail():
     GMAIL_SMTP_PORT = 587
 
     def __init__(self,debug=True):
-        self.username = None
+        self.username =None
         self.password = None
         self.access_token = None
 
@@ -34,7 +34,7 @@ class Gmail():
         # self.connect_imap()
 
 
-    def connect_imap(self, raise_errors=True):
+    def _connect_imap(self, raise_errors=True):
         # try:
         #     self.imap = imaplib.IMAP4_SSL(self.GMAIL_IMAP_HOST, self.GMAIL_IMAP_PORT)
         # except socket.error:
@@ -67,7 +67,7 @@ class Gmail():
             self.smtp = None
             return False
 
-    def connect_smtp(self,raise_errors=True):
+    def _connect_smtp(self,raise_errors=True):
 
 
         # self.smtp = smtplib.SMTP(self.server,self.port)
@@ -88,8 +88,8 @@ class Gmail():
     def fetch_mailboxes(self):
         response, mailbox_list = self.imap.list()
         if response == 'OK':
-            for mailbox in mailbox_list:
-                mailbox_name = mailbox.split('"/"')[-1].replace('"', '').strip()
+            for mailbox in mailbox_list: 
+                mailbox_name = mailbox.split(b'"/"')[-1].replace(b'"', b'').strip()
                 mailbox = Mailbox(self)
                 mailbox.external_name = mailbox_name
                 self.mailboxes[mailbox_name] = mailbox
@@ -125,30 +125,42 @@ class Gmail():
             del self.mailboxes[mailbox_name]
 
 
-    def login_imap(self,username,password):
+    def _login_imap(self,username,password):
 
         if not self.imap:
-            self.connect_imap()
+            self._connect_imap()
         imap_login = self.imap.login(self.username, self.password)
         self.logged_in = (imap_login and imap_login[0] == 'OK')
         if self.logged_in:
             self.fetch_mailboxes()
         return self.logged_in
+    
+
+    def send(self,message):
+        if not self.is_connected():
+            self._connect_smtp()
         
+
+        recepients = []
+        recepients.extend(message.get_all('To') or [] )  
+        recepients.extend(message.get_all('Bcc') or [] )  
+        recepients.extend(message.get_all('Cc') or [] )  
+        
+        self.smtp.sendmail(self.username,recepients,message.as_string())
 
     def login(self, username, password,only_fetch=False):
         # by default logins for both IMAP and SMTP connection
 
-        self.username = parseaddr(username)[1]
+        self.username = username
         self.password = password
 
         try:
-            self.login_imap(self.username,self.password)            
+            self._login_imap(self.username,self.password)            
         except imaplib.IMAP4.error:
             raise AuthenticationError
         
         if not only_fetch:
-            self.connect_smtp()
+            self._connect_smtp()
         
             try :
                 self.smtp.login(self.username,self.password)
@@ -163,7 +175,7 @@ class Gmail():
         self.access_token = access_token
 
         if not self.imap:
-            self.connect_imap()
+            self._connect_imap()
 
         try:
             auth_string = 'user=%s\1auth=Bearer %s\1\1' % (username, access_token)
