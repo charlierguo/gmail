@@ -58,6 +58,17 @@ You can also check if you are logged in at any time:
     g = gmail.login(username, password)
     g.logged_in # Should be True, AuthenticationError if login fails
 
+### Sending email 
+
+    from gmail import Gmail, Message 
+    g = Gmail()
+    g.login(username, password)
+
+    message = Message.create("Hello","test@test.com",text="Hello world")
+    g.send(message)
+
+
+
 ### OAuth authentication 
 
 If you have already received an [OAuth2 access token from Google](https://developers.google.com/accounts/docs/OAuth2) for a given user, you can easily log the user in. (Because OAuth 1.0 usage was deprecated in April 2012, this library does not currently support its usage)
@@ -144,7 +155,7 @@ There is also few shortcuts to mark messages quickly:
 * Moving between labels/mailboxes
 * Intuitive thread fetching & manipulation
 * clean the python 3 part ( as it was generated using `2to3` script )
-* Sending mail via Google's SMTP servers (for now, check out https://github.com/paulchakravarti/gmail-sender)
+* ~~Sending mail via Google's SMTP servers (for now, check out https://github.com/paulchakravarti/gmail-sender)~~
 
 ## Copyright
 
