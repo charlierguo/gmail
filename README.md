@@ -15,7 +15,7 @@ Heavily inspired by [Kriss "nu7hatch" Kowalik's GMail for Ruby library](https://
 
 ## Installation
 
-For now, installation is manual (`pip` support not yet implemented). Supports python 2/3 and pypy.
+For now, installation is manual (`pip` support not yet implemented). Supports python 2 and pypy.
 ```
 
 git clone git://github.com/charlierguo/gmail.git
@@ -154,7 +154,7 @@ There is also few shortcuts to mark messages quickly:
 * Better label support
 * Moving between labels/mailboxes
 * Intuitive thread fetching & manipulation
-* clean the python 3 part ( as it was generated using `2to3` script )
+* solve issues on the python 3 part ( as it was generated using `2to3` script )
 * ~~Sending mail via Google's SMTP servers (for now, check out https://github.com/paulchakravarti/gmail-sender)~~
 
 ## Copyright
