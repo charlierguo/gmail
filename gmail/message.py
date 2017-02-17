@@ -205,7 +205,7 @@ class Message():
     def parse_subject(self, encoded_subject):
         dh = decode_header(encoded_subject)
         default_charset = 'ASCII'
-        return ''.join([str(t[0], t[1] or default_charset) for t in dh])
+        return ''.join([str(t[0]) for t in dh])
 
     def parse(self, raw_message):
         raw_headers = raw_message[0]
