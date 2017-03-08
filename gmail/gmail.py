@@ -1,12 +1,18 @@
-import re
+from email.utils import parseaddr, getaddresses
 import imaplib
-import smtplib
 import itertools
+import logging
+import re
+import smtplib
+from smtplib import SMTPResponseException, SMTPServerDisconnected, SMTPAuthenticationError
+
 from .mailbox import Mailbox
 from .utf import encode as encode_utf7, decode as decode_utf7
 from .exceptions import *
-from email.utils import parseaddr, getaddresses
-from smtplib import SMTPResponseException, SMTPServerDisconnected, SMTPAuthenticationError
+
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger()
 
 
 class Gmail():
@@ -91,6 +97,8 @@ class Gmail():
                 mailbox = Mailbox(self)
                 mailbox.external_name = mailbox_name
                 self.mailboxes[mailbox_name] = mailbox
+
+        logger.debug('self.mailboxes:\n{}'.format(self.mailboxes))
 
     def use_mailbox(self, mailbox):
         if mailbox:
@@ -220,22 +228,22 @@ class Gmail():
         return keys
 
     def inbox(self):
-        return self.mailbox("INBOX")
+        return self.mailbox(bytes("INBOX", "ascii"))
 
     def spam(self):
-        return self.mailbox("[Gmail]/Spam")
+        return self.mailbox(bytes("[Gmail]/Spam"))
 
     def starred(self):
-        return self.mailbox("[Gmail]/Starred")
+        return self.mailbox(bytes("[Gmail]/Starred"))
 
     def all_mail(self):
-        return self.mailbox("[Gmail]/All Mail")
+        return self.mailbox(bytes("[Gmail]/All Mail"))
 
     def sent_mail(self):
-        return self.mailbox("[Gmail]/Sent Mail")
+        return self.mailbox(bytes("[Gmail]/Sent Mail"))
 
     def important(self):
-        return self.mailbox("[Gmail]/Important")
+        return self.mailbox(bytes("[Gmail]/Important"))
 
     def mail_domain(self):
         return self.username.split('@')[-1]

@@ -67,7 +67,7 @@ class Mailbox():
         response, data = self.gmail.imap.uid('SEARCH', *search)
         if response == 'OK':
             # filter out empty strings
-            uids = [_f for _f in data[0].split(' ') if _f]
+            uids = [_f for _f in data[0].split(b' ') if _f]
 
             for uid in uids:
                 if not self.messages.get(uid):
