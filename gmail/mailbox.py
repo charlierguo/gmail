@@ -67,44 +67,19 @@ class Mailbox():
         response, data = self.gmail.imap.uid('SEARCH', *search)
         if response == 'OK':
             # filter out empty strings
-            uids = [_f for _f in data[0].split(' ') if _f]
+            uids = [_f for _f in data[0].split(b' ') if _f]
 
             for uid in uids:
                 if not self.messages.get(uid):
                     self.messages[uid] = Message(self, uid)
                 emails.append(self.messages[uid])
 
-            if prefetch and emails:
+            if prefetch and len(emails) > 0:
                 messages_dict = {}
                 for email in emails:
                     messages_dict[email.uid] = email
                 self.messages.update(
                     self.gmail.fetch_multiple_messages(messages_dict))
-
-        return emails
-
-    # WORK IN PROGRESS. NOT FOR ACTUAL USE
-    def threads(self, prefetch=False, **kwargs):
-        emails = []
-        response, data = self.gmail.imap.uid('SEARCH', 'ALL')
-        if response == 'OK':
-            uids = data[0].split(' ')
-
-            for uid in uids:
-                if not self.messages.get(uid):
-                    self.messages[uid] = Message(self, uid)
-                emails.append(self.messages[uid])
-
-            if prefetch:
-                fetch_str = ','.join(uids)
-                response, results = self.gmail.imap.uid(
-                    'FETCH', fetch_str, '(BODY.PEEK[] FLAGS X-GM-THRID X-GM-MSGID X-GM-LABELS)')
-                for index in range(len(results) - 1):
-                    raw_message = results[index]
-                    if re.search(r'UID (\d+)', raw_message[0]):
-                        uid = re.search(
-                            r'UID (\d+)', raw_message[0]).groups(1)[0]
-                        self.messages[uid].parse(raw_message)
 
         return emails
 

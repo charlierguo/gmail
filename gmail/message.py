@@ -11,7 +11,11 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import formatdate, make_msgid, getaddresses, parseaddr
 from imaplib import ParseFlags
+import logging
 from mimetypes import guess_type
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger()
 
 if sys.version_info[0] == 2:
     unicode_type = unicode
@@ -34,7 +38,7 @@ class Message():
         returns: MIMEMultipart or MIMEText. Currently as a SMTP message doesnt require any of the methods which 
                  are provided by this message class, this create method doesnt return a Message object.  
         """
-        if not is_html and not attachments:
+        if not is_html and attachments is None:
             # Simple plain text email
             message = MIMEText(text, 'plain', charset(text))
         else:
@@ -108,6 +112,7 @@ class Message():
         self.message_id = None
 
         self.attachments = None
+        self.fetch()
 
     def is_read(self):
         return ('\\Seen' in self.flags)
@@ -191,14 +196,14 @@ class Message():
         return hdrs
 
     def parse_flags(self, headers):
-        return list(ParseFlags(headers))
+        return list(ParseFlags(bytes(headers, 'ascii')))
         # flags = re.search(r'FLAGS \(([^\)]*)\)', headers).groups(1)[0].split(' ')
 
     def parse_labels(self, headers):
         if re.search(r'X-GM-LABELS \(([^\)]+)\)', headers):
             labels = re.search(
                 r'X-GM-LABELS \(([^\)]+)\)', headers).groups(1)[0].split(' ')
-            return [l.replace('"', '').decode("string_escape") for l in labels]
+            return [l.replace('"', '') for l in labels]
         else:
             return list()
 
@@ -208,10 +213,12 @@ class Message():
         return ''.join([str(t[0]) for t in dh])
 
     def parse(self, raw_message):
-        raw_headers = raw_message[0]
-        raw_email = raw_message[1]
+        raw_headers = raw_message[0].decode()
+        raw_email = raw_message[1].decode()
 
         self.message = email.message_from_string(raw_email)
+        logger.debug('self.message is {}'.format(self.message))
+
         self.headers = self.parse_headers(self.message)
 
         self.to = self.message['to']
@@ -278,43 +285,6 @@ class Message():
                                   'attachment', filename=os.path.basename(a))
             encode_base64(attachment)
             return attachment
-
-    # returns a list of fetched messages (both sent and received) in
-    # chronological order
-    def fetch_thread(self):
-        self.fetch()
-        original_mailbox = self.mailbox
-        self.gmail.use_mailbox(original_mailbox.name)
-
-        # fetch and cache messages from inbox or other received mailbox
-        response, results = self.gmail.imap.uid(
-            'SEARCH', None, '(X-GM-THRID ' + self.thread_id + ')')
-        received_messages = {}
-        uids = results[0].split(' ')
-        if response == 'OK':
-            for uid in uids:
-                received_messages[uid] = Message(original_mailbox, uid)
-            self.gmail.fetch_multiple_messages(received_messages)
-            self.mailbox.messages.update(received_messages)
-
-        # fetch and cache messages from 'sent'
-        self.gmail.use_mailbox('[Gmail]/Sent Mail')
-        response, results = self.gmail.imap.uid(
-            'SEARCH', None, '(X-GM-THRID ' + self.thread_id + ')')
-        sent_messages = {}
-        uids = results[0].split(' ')
-        if response == 'OK':
-            for uid in uids:
-                sent_messages[uid] = Message(
-                    self.gmail.mailboxes['[Gmail]/Sent Mail'], uid)
-            self.gmail.fetch_multiple_messages(sent_messages)
-            self.gmail.mailboxes[
-                '[Gmail]/Sent Mail'].messages.update(sent_messages)
-
-        self.gmail.use_mailbox(original_mailbox.name)
-
-        # combine and sort sent and received messages
-        return sorted(list(dict(list(received_messages.items()) + list(sent_messages.items())).values()), key=lambda m: m.sent_at)
 
 
 class Attachment:
