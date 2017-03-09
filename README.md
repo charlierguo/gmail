@@ -11,12 +11,16 @@ Heavily inspired by [Kriss "nu7hatch" Kowalik's GMail for Ruby library](https://
 ## Author
 
 * [Charlie Guo](https://github.com/charlierguo)
+* [Girish Ramnani](https://github.com/girishramnani)
 
 ## Installation
 
-For now, installation is manual (`pip` support not yet implemented) and the only requirement is to use Python 2 (2.7+ to be precise):
+For now, installation is manual (`pip` support not yet implemented). Supports python 2 and pypy.
+```
 
-    git clone git://github.com/charlierguo/gmail.git
+git clone git://github.com/charlierguo/gmail.git
+
+```
 
 ## Features
 
@@ -53,6 +57,17 @@ You can also check if you are logged in at any time:
 
     g = gmail.login(username, password)
     g.logged_in # Should be True, AuthenticationError if login fails
+
+### Sending email 
+
+    from gmail import Gmail, Message 
+    g = Gmail()
+    g.login(username, password)
+
+    message = Message.create("Hello","test@test.com",text="Hello world")
+    g.send(message)
+
+
 
 ### OAuth authentication 
 
@@ -134,11 +149,13 @@ There is also few shortcuts to mark messages quickly:
     email.unstar()
 
 ### Roadmap
+
 * Write tests
 * Better label support
 * Moving between labels/mailboxes
 * Intuitive thread fetching & manipulation
-* Sending mail via Google's SMTP servers (for now, check out https://github.com/paulchakravarti/gmail-sender)
+* solve issues on the python 3 part ( as it was generated using `2to3` script )
+* ~~Sending mail via Google's SMTP servers (for now, check out https://github.com/paulchakravarti/gmail-sender)~~
 
 ## Copyright
 
