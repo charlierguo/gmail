@@ -12,6 +12,8 @@ Heavily inspired by [Kriss "nu7hatch" Kowalik's GMail for Ruby library](https://
 
 * [Charlie Guo](https://github.com/charlierguo)
 
+Edited by me to work with python3
+
 ## Installation
 
 For now, installation is manual (`pip` support not yet implemented) and the only requirement is to use Python 2 (2.7+ to be precise):
