@@ -8,15 +8,16 @@ __This library is still under development, so please forgive some of the rough e
 
 Heavily inspired by [Kriss "nu7hatch" Kowalik's GMail for Ruby library](https://github.com/nu7hatch/gmail)
 
-## Author
+## Contributors
 
-* [Charlie Guo](https://github.com/charlierguo)
+* [Charlie Guo](https://github.com/charlierguo) - Author of the original python2 package
+* [Reuben Castelino](https://github.com/projectdelphai) - Edited by me to work with python3
 
 ## Installation
 
-For now, installation is manual (`pip` support not yet implemented) and the only requirement is to use Python 2 (2.7+ to be precise):
+For now, installation is manual (`pip` support not yet implemented) and the only requirement is to use Python 3
 
-    git clone git://github.com/charlierguo/gmail.git
+    git clone git://github.com/projectdelphai/gmail.git
 
 ## Features
 

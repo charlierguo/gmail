@@ -15,6 +15,9 @@ tmtags
 
 ## PROJECT::GENERAL
 *.pyc
+build/
+dist/
+gmail.egg-info/
 
 ## PROJECT::SPECIFIC
 *.rdb

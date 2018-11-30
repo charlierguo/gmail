@@ -22,8 +22,8 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-text_type = unicode
-binary_type = str
+text_type = str
+binary_type = bytes
 
 PRINTABLE = set(range(0x20, 0x26)) | set(range(0x27, 0x7f))
 
