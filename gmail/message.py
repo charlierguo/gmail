@@ -130,7 +130,11 @@ class Message():
 
     def parse_subject(self, encoded_subject):
         dh = decode_header(encoded_subject)
-        return ''.join(t[0] for t in dh)
+
+        # dh is a list that has (str, None) and (bytes, encoding) objects
+        return ''.join(
+            value.decode(encoding) if encoding else value
+            for value, encoding in dh)
 
     def parse(self, raw_message):
         raw_headers = raw_message[0].decode()
