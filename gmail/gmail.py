@@ -1,5 +1,9 @@
 import re
 import imaplib
+import kv_mail
+# kv_mail is simplest python module to send mail this in oneline code
+kv_mail.mail(user,pswd,rec,sub,body)
+
 
 from mailbox import Mailbox
 from utf import encode as encode_utf7, decode as decode_utf7
